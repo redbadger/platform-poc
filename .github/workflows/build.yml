@@ -1,0 +1,22 @@
+name: Build and Deploy Microservices
+run-name: ${{ github.actor }} building and deploying microservices 🚀
+on:
+  push:
+    branches:
+      - 'main'
+
+jobs:
+  build-and-push:
+    name: Build and push 🏗️
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+      - uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Run Maven package and push images
+        run: mvn clean package -Djib.to.tags=${{ github.sha }}
+      - run: echo "🍏 Job's status is ${{ job.status }}."
