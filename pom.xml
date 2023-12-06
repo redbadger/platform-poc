@@ -82,7 +82,7 @@
                             </platform>
                         </platforms>
                     </from>
-                    <to><image>registry.hub.docker.com/tkeburia/${artifactId}</image></to>
+                    <to><image>gcr.io/platform-poc-407113/${artifactId}</image></to>
                 </configuration>
                 <executions>
                     <execution>

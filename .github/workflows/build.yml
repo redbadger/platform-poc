@@ -13,6 +13,11 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v4
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+      - name: Authenticate with GCR
+        run: |
+          echo "$GCR_KEY" | base64 --decode > gcr-key.json
+          gcloud auth activate-service-account --key-file=gcr-key.json
+          gcloud auth configure-docker
       - uses: actions/setup-java@v3
         with:
           java-version: '17'
