@@ -5,8 +5,6 @@ on:
     branches:
       - 'main'
 
-env:
-  USE_GKE_GCLOUD_AUTH_PLUGIN: True
 
 jobs:
   build-and-push:
@@ -21,8 +19,9 @@ jobs:
           echo ${{ secrets.GCR_KEY }} | base64 --decode > gcr-key.json
           gcloud auth activate-service-account --key-file=gcr-key.json
           gcloud auth configure-docker
-          sudo apt-get update
+          sudo apt update
           sudo apt-get install google-cloud-sdk-gke-gcloud-auth-plugin
+          export USE_GKE_GCLOUD_AUTH_PLUGIN=True
           gcloud container clusters get-credentials platform-poc-407113-cluster --location europe-west2 --project platform-poc-407113
       - uses: actions/setup-java@v3
         with:
