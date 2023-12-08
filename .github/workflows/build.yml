@@ -27,8 +27,14 @@ jobs:
         run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
       - name: Run Maven package and push images
         run: mvn clean package -Djib.to.tags=${{ steps.vars.outputs.sha_short }}
-      - name: Deploy services
+      - run: echo "🍏 Job's status is ${{ job.status }}."
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy services
+    needs:
+      - build-and-push
+    steps:
+      - name: run helm upgrade
         uses: 'deliverybot/helm@v1'
         with:
           exec: ./helm_upgrade.sh ${{ steps.vars.outputs.sha_short }}
-      - run: echo "🍏 Job's status is ${{ job.status }}."
