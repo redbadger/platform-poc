@@ -29,5 +29,6 @@ jobs:
         run: mvn clean package -Djib.to.tags=${{ steps.vars.outputs.sha_short }}
       - name: Deploy services
         uses: 'deliverybot/helm@v1'
-        run: ./helm_upgrade.sh ${{ steps.vars.outputs.sha_short }}
+        with:
+          exec: ./helm_upgrade.sh ${{ steps.vars.outputs.sha_short }}
       - run: echo "🍏 Job's status is ${{ job.status }}."
