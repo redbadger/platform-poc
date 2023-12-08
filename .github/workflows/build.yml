@@ -5,6 +5,9 @@ on:
     branches:
       - 'main'
 
+env:
+  USE_GKE_GCLOUD_AUTH_PLUGIN: True
+
 jobs:
   build-and-push:
     name: Build, push and deploy 🏗️🚀
