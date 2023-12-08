@@ -18,7 +18,7 @@ jobs:
           echo ${{ secrets.GCR_KEY }} | base64 --decode > gcr-key.json
           gcloud auth activate-service-account --key-file=gcr-key.json
           gcloud auth configure-docker
-          gcloud container clusters get-credentials platform-poc-407113-cluster --location europe-west2
+          gcloud container clusters get-credentials platform-poc-407113-cluster --location europe-west2 --project platform-poc-407113
       - uses: actions/setup-java@v3
         with:
           java-version: '17'
