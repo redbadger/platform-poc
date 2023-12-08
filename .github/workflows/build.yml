@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-and-push:
-    name: Build and push 🏗️
+    name: Build, push and deploy 🏗️🚀
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
@@ -28,12 +28,6 @@ jobs:
       - name: Run Maven package and push images
         run: mvn clean package -Djib.to.tags=${{ steps.vars.outputs.sha_short }}
       - run: echo "🍏 Job's status is ${{ job.status }}."
-  deploy:
-    runs-on: ubuntu-latest
-    name: Deploy services
-    needs:
-      - build-and-push
-    steps:
       - name: Use Helm
         uses: azure/setup-helm@v1
         with:
