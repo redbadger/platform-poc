@@ -4,7 +4,7 @@ COMMIT_SHA=$1
 
 cd ./deployment
 
-for service in notification-service;
+for service in notification-service order-service product-service inventory-service;
 do
   pushd $service
     echo "deploying $service..."
