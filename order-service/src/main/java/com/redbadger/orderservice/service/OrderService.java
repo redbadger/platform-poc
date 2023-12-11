@@ -62,7 +62,7 @@ public class OrderService {
             orderRepository.save(order);
             kafkaTemplate.send("notificationTopic", new OrderPlacedEvent(order.getOrderNumber()));
             log.info(String.format("Order Number %s Placed Successfully", order.getOrderNumber()));
-            return "Order Placed";
+            return String.format("Order Number %s Placed Successfully", order.getOrderNumber());
         }
         else {
             throw new IllegalArgumentException("Product is not in stock, please try again later");
