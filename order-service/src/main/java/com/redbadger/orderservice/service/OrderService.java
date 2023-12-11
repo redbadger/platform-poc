@@ -1,6 +1,7 @@
 package com.redbadger.orderservice.service;
 
 import com.redbadger.orderservice.dto.InventoryResponse;
+import com.redbadger.orderservice.dto.OrderDto;
 import com.redbadger.orderservice.dto.OrderLineItemsDto;
 import com.redbadger.orderservice.dto.OrderRequest;
 import com.redbadger.orderservice.event.OrderPlacedEvent;
@@ -27,6 +28,12 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final WebClient.Builder webClientBuilder;
     private final KafkaTemplate<String, OrderPlacedEvent> kafkaTemplate;
+
+    public List<OrderDto> getOrders() {
+        final List<Order> all = orderRepository.findAll();
+
+        return all.stream().map(this::mapToOrder).toList();
+    }
 
     public String placeOrder(OrderRequest orderRequest) {
         Order order = new Order();
@@ -75,5 +82,18 @@ public class OrderService {
         orderLineItems.setQuantity(orderLineItemsDto.getQuantity());
         orderLineItems.setSkuCode(orderLineItemsDto.getSkuCode());
         return orderLineItems;
+    }
+
+    private OrderDto mapToOrder(Order order) {
+        final String orderNumber = order.getOrderNumber();
+
+        final List<OrderLineItemsDto> items = order.getOrderLineItemsList()
+                                                   .stream()
+                                                   .map(entry -> new OrderLineItemsDto(entry.getSkuCode(), entry.getPrice(), entry.getQuantity()))
+                                                   .toList();
+
+        return new OrderDto(orderNumber, items);
+
+
     }
 }
