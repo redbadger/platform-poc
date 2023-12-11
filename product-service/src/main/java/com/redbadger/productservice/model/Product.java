@@ -8,8 +8,6 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Field;
 import org.springframework.data.annotation.Id;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 
 @Entity(name = "products")
 @AllArgsConstructor
@@ -19,9 +17,8 @@ import javax.persistence.GenerationType;
 public class Product {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Field(name = "product_id")
-    private long id;
+    private Long id;
     private String name;
     private String description;
     private int price;
