@@ -72,7 +72,7 @@ public class OrderService {
             return String.format("Order Number %s Placed Successfully", order.getOrderNumber());
         }
         else {
-            throw new IllegalArgumentException("Product is not in stock, please try again later");
+            return "Product is not in stock, please try again later";
         }
     }
 
