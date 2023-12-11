@@ -29,7 +29,7 @@ popd
 
 echo "deploying services..."
 cd deployment
-helm install kafka oci://registry-1.docker.io/bitnamicharts/kafka
+helm install kafka oci://registry-1.docker.io/bitnamicharts/kafka --set listeners.client.protocol=PLAINTEXT
 
 for service in *
 do
