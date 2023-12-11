@@ -23,7 +23,6 @@ public class ProductServiceApplication implements CommandLineRunner {
     public void run(String... args) {
         if (productRepository.count() < 1) {
             productRepository.save(Product.builder()
-                                          .id(123)
                                           .name("iPhone 13")
                                           .description("New iPhone")
                                           .price(1000)
@@ -31,7 +30,6 @@ public class ProductServiceApplication implements CommandLineRunner {
                                           .build()
             );
             productRepository.save(Product.builder()
-                                          .id(234)
                                           .name("Samsung S23")
                                           .description("New Samsung")
                                           .price(800)
@@ -39,7 +37,6 @@ public class ProductServiceApplication implements CommandLineRunner {
                                           .build()
             );
             productRepository.save(Product.builder()
-                                          .id(345)
                                           .name("Google Pixel 8")
                                           .description("New Pixel")
                                           .price(7000)

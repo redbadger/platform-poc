@@ -13,10 +13,10 @@ There are 4 services described in the diagram below
 
 ![high level architecture](./docs/arch.png)
 
-1. Product-service - uses the GCP NoSQL Data store to persist the product catalog. The products can be queried as a list and new products can be created through the api endpoint.
-2. Order-service - takes a request of a list of order line items, checks they are all in stock (http call to the inventory service) and if so, creates an order entry in the database. Afterwards it sends an event to notificationTopic kafka topic.
-3. Inventory-service - takes a request for a product and checks whether it's in stock
-4. Notification-service - listens to the notificationTopic topic and prints out a message every time an order comes through
+1. **Product-service** - uses the GCP NoSQL Data store to persist the product catalog. The products can be queried as a list and new products can be created through the api endpoint.
+2. **Order-service** - takes a request of a list of order line items, checks they are all in stock (http call to the inventory service) and if so, creates an order entry in the database. Afterwards it sends an event to notificationTopic kafka topic.
+3. **Inventory-service** - takes a request for a product and checks whether it's in stock
+4. **Notification-service** - listens to the notificationTopic topic and prints out a message every time an order comes through
 
 ## CI/CD
 
@@ -55,3 +55,30 @@ Some of them are:
 * Set up for local runs (e.g. docker-compose file)
 * More granular CI (individual builds/deployments depending on what changed)
 * Clean-up/better modularisation of terraform
+
+## Sample requests
+
+Create an order 
+
+```shell
+curl --location --request POST 'http://${ORDER_SERVICE_INGRESS_IP}/api/order' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "orderLineItemsDtoList": [
+        {
+            "id": "123",
+            "skuCode": "iphone_13",
+            "price": 200,
+            "quantity": 1
+        }
+    ]
+}'
+```
+
+get all products in the catalog 
+
+```shell
+curl http://${PRODUCT_SERVICE_INGRESS_IP}/api/product
+```
+
+create a new product 

@@ -12,7 +12,6 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProductResponse {
-    private long id;
     private String name;
     private String description;
     private int price;
