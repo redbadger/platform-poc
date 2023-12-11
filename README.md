@@ -82,3 +82,14 @@ curl http://${PRODUCT_SERVICE_INGRESS_IP}/api/product
 ```
 
 create a new product 
+
+```shell
+curl --location --request POST 'http://${PRODUCT_SERVICE_INGRESS_IP}/api/product' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+        "name": "iPhone 14",
+        "description": "New iPhone 14",
+        "price": 1100,
+        "skuCode": "iphone_14"
+    }'
+```
