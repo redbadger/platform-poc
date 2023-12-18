@@ -1,17 +1,17 @@
-name: Build and Deploy Microservices
-run-name: ${{ github.actor }} building and deploying microservices 🚀
+name: Build and Deploy Java Microservices
+run-name: ${{ github.actor }} building and deploying Java microservices 🚀
 on:
   push:
     branches:
-      - 'main'
+      - "main"
     paths:
-      - 'java-containers-k8s/**'
+      - "java-containers-k8s/**"
 
   pull_request:
     branches:
-      - 'main'
+      - "main"
     paths:
-      - 'java-containers-k8s/**'
+      - "java-containers-k8s/**"
 
 jobs:
   build-and-push:
@@ -24,7 +24,9 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+      - run:
+          echo "💡 The ${{ github.repository }} repository has been cloned to
+          the runner."
       - name: get google-cloud-sdk-gke-gcloud-auth-plugin
         uses: cobraz/setup-gke-gcloud-auth-plugin@v1
       - name: Authenticate with GCR
@@ -35,8 +37,8 @@ jobs:
           gcloud container clusters get-credentials platform-poc-407113-cluster --location europe-west2 --project platform-poc-407113
       - uses: actions/setup-java@v3
         with:
-          java-version: '17'
-          distribution: 'temurin'
+          java-version: "17"
+          distribution: "temurin"
       - name: Set short sha
         id: vars
         run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
@@ -45,7 +47,7 @@ jobs:
       - name: Use Helm
         uses: azure/setup-helm@v1
         with:
-          version: 'v3.13.2'
+          version: "v3.13.2"
       - name: run helm upgrade
         run: ./helm_upgrade.sh ${{ steps.vars.outputs.sha_short }}
       - run: echo "🍏 Job's status is ${{ job.status }}."

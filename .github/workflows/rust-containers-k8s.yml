@@ -1,0 +1,57 @@
+name: Build and Deploy Rust Microservices
+run-name: ${{ github.actor }} building and deploying Rust microservices 🚀
+on:
+  push:
+    branches:
+      - "main"
+    paths:
+      - "rust-containers-k8s/**"
+
+  pull_request:
+    branches:
+      - "main"
+    paths:
+      - "rust-containers-k8s/**"
+
+jobs:
+  build-and-push:
+    name: Build, push and deploy 🏗️🚀
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rust-containers-k8s
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - run:
+          echo "💡 The ${{ github.repository }} repository has been cloned to
+          the runner."
+      - name: get google-cloud-sdk-gke-gcloud-auth-plugin
+        uses: cobraz/setup-gke-gcloud-auth-plugin@v1
+
+      - name: Login to GAR
+        uses: docker/login-action@v3
+        with:
+          registry: europe-west2-docker.pkg.dev
+          username: _json_key_base64
+          password: ${{ secrets.GCR_KEY_RUST }}
+
+      - name: Build and push Docker images
+        run: |
+          ./scripts/build-and-push.sh
+
+      - name: Authenticate with GCR
+        run: |
+          echo ${{ secrets.GCR_KEY_RUST }} | base64 --decode > gcr-key.json
+          gcloud auth activate-service-account --key-file=gcr-key.json
+          gcloud container clusters get-credentials platform-poc-rust-cluster --location europe-west2 --project platform-poc-rust
+
+      - name: Set short sha
+        id: vars
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: run helm upgrade
+        run: ./scripts/helm_upgrade.sh ${{ steps.vars.outputs.sha_short }}
+
+      - run: echo "🍏 Job's status is ${{ job.status }}."
