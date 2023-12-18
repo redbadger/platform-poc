@@ -1,3 +1,5 @@
+#!/bin/bash
+
 set -e
 
 pushd infrastructure
@@ -5,6 +7,11 @@ pushd infrastructure
 echo "spinning up infrastructure..."
 
 pushd cluster
+terraform init
+terraform apply -auto-approve
+popd
+
+pushd registry
 terraform init
 terraform apply -auto-approve
 popd
@@ -29,11 +36,11 @@ popd
 
 echo "deploying services..."
 cd deployment
-helm install kafka oci://registry-1.docker.io/bitnamicharts/kafka --set listeners.client.protocol=PLAINTEXT
+helm upgrade --install kafka oci://registry-1.docker.io/bitnamicharts/kafka --set listeners.client.protocol=PLAINTEXT
 
 for service in *; do
   pushd "$service"
-  helm install "$service" -f values.yaml .
+  helm upgrade --install "$service" -f values.yaml .
   popd
 done
 echo "deployment done!"

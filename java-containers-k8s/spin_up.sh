@@ -29,12 +29,11 @@ popd
 
 echo "deploying services..."
 cd deployment
-helm install kafka oci://registry-1.docker.io/bitnamicharts/kafka --set listeners.client.protocol=PLAINTEXT
+helm upgrade --install kafka oci://registry-1.docker.io/bitnamicharts/kafka --set listeners.client.protocol=PLAINTEXT
 
-for service in *
-do
+for service in *; do
   pushd "$service"
-  helm install "$service" -f values.yaml .
+  helm upgrade --install "$service" -f values.yaml .
   popd
 done
 echo "deployment done!"

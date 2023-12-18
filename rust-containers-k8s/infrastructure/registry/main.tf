@@ -1,3 +1,11 @@
+provider "google" {
+  project = "platform-poc-rust"
+}
+
+module "shared_vars" {
+  source = "../shared"
+}
+
 resource "google_artifact_registry_repository" "inventory-service" {
   location      = module.shared_vars.region
   repository_id = "inventory-service"
@@ -8,6 +16,7 @@ resource "google_artifact_registry_repository" "inventory-service" {
     immutable_tags = true
   }
 }
+
 resource "google_artifact_registry_repository" "notification-service" {
   location      = module.shared_vars.region
   repository_id = "notification-service"
@@ -18,6 +27,7 @@ resource "google_artifact_registry_repository" "notification-service" {
     immutable_tags = true
   }
 }
+
 resource "google_artifact_registry_repository" "order-service" {
   location      = module.shared_vars.region
   repository_id = "order-service"
@@ -28,6 +38,7 @@ resource "google_artifact_registry_repository" "order-service" {
     immutable_tags = true
   }
 }
+
 resource "google_artifact_registry_repository" "product-service" {
   location      = module.shared_vars.region
   repository_id = "product-service"
