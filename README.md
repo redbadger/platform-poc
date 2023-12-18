@@ -2,8 +2,8 @@
 
 # spring-boot-microservices POC
 
-This is a sample project to set up a set of microservices in GKE. It is to be used as a benchmark to compare against 
-next-gen platform deployment options with rust. 
+This is a sample project to set up a set of microservices in GKE. It is to be used as a benchmark to compare against
+next-gen platform deployment options with rust.
 
 ## High level architecture
 
@@ -25,43 +25,46 @@ and the latest version will be deployed to the cluster by helm.
 
 ## Spinning up or tearing down the setup
 
-To spin up the set of services and all relevant infrastructure, invoke the `spin_up.sh` script. 
-You will need to have the env variables listed in `.env` present in your environment for this. Reach out to the repo contributors 
-to obtain this. 
+To spin up the set of services and all relevant infrastructure, invoke the `spin_up.sh` script.
+You will need to have the env variables listed in `.env` present in your environment for this. Reach out to the repo contributors
+to obtain this.
 
 You'll need the following tools installed before runinng this:
-* gcloud cli
-* kubectl
-* helm
-* terraform
+
+- gcloud cli
+- kubectl
+- helm
+- terraform
 
 To tear down the whole set up, just run the `tear_down.sh` script. This will remove everything except the service accounts
 needed to spin it up back again and for CI jobs.
 
 ## Improvement points
+
 This is just a basic setup. There are many things that could be improved if this was a real life application, but was not
-implemented for this POC. 
+implemented for this POC.
 
 Some of them are:
-* Secret Encryption at rest
-* Domain name(s) + HTTPS - the services are currently only accessible through the ingress IP addresses
-* Authentication (both service to service and ingress)
-* Better service versioning in CI
-* GitOps
-* Managed Kafka instance
-* Observability tools (opentelemetry, Prometheus etc.)
-* Tighten roles and permissions for service accounts
-* Remote (encrypted) terraform backend
-* Set up for local runs (e.g. docker-compose file)
-* More granular CI (individual builds/deployments depending on what changed)
-* Clean-up/better modularisation of terraform
+
+- Secret Encryption at rest
+- Domain name(s) + HTTPS - the services are currently only accessible through the ingress IP addresses
+- Authentication (both service to service and ingress)
+- Better service versioning in CI
+- GitOps
+- Managed Kafka instance
+- Observability tools (opentelemetry, Prometheus etc.)
+- Tighten roles and permissions for service accounts
+- Remote (encrypted) terraform backend
+- Set up for local runs (e.g. docker-compose file)
+- More granular CI (individual builds/deployments depending on what changed)
+- Clean-up/better modularisation of terraform
 
 ## Sample requests
 
-Create an order 
+Create an order
 
 ```shell
-curl --location --request POST 'http://${ORDER_SERVICE_INGRESS_IP}/api/order' \
+curl --location --request POST "http://${ORDER_SERVICE_INGRESS_IP}/api/order" \
 --header 'Content-Type: application/json' \
 --data-raw '{
     "orderLineItemsDtoList": [
@@ -75,16 +78,16 @@ curl --location --request POST 'http://${ORDER_SERVICE_INGRESS_IP}/api/order' \
 }'
 ```
 
-get all products in the catalog 
+get all products in the catalog
 
 ```shell
-curl http://${PRODUCT_SERVICE_INGRESS_IP}/api/product
+curl "http://${PRODUCT_SERVICE_INGRESS_IP}/api/product"
 ```
 
-create a new product 
+create a new product
 
 ```shell
-curl --location --request POST 'http://${PRODUCT_SERVICE_INGRESS_IP}/api/product' \
+curl --location --request POST "http://${PRODUCT_SERVICE_INGRESS_IP}/api/product" \
 --header 'Content-Type: application/json' \
 --data-raw '{
         "name": "iPhone 14",
