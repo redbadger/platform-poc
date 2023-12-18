@@ -38,8 +38,7 @@ jobs:
           password: ${{ secrets.GCR_KEY_RUST }}
 
       - name: Build and push Docker images
-        run: |
-          ./scripts/build-and-push.sh
+        run: ./scripts/build_and_push.sh
 
       - name: Authenticate with GCR
         run: |
