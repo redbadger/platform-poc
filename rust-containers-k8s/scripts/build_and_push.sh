@@ -2,12 +2,12 @@
 
 set -euo pipefail
 
-registry=europe-west2-docker.pkg.dev
+host=europe-west2-docker.pkg.dev
 project=platform-poc-rust
 sha="$(git rev-parse --short HEAD)"
 
 for service in *-service; do
-  tag="${registry}/${project}/${service}:${sha}"
+  tag="${host}/${project}/${service}/${service}:${sha}"
 
   pushd "$service"
 

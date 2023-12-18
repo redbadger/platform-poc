@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: europe-west2-docker.pkg.dev/platform-poc-rust/inventory-service
+  repository: europe-west2-docker.pkg.dev/platform-poc-rust/inventory-service/inventory-service
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest"
