@@ -4,12 +4,17 @@ on:
   push:
     branches:
       - 'main'
-
+    paths:
+      - 'java-containers-k8s/**'
 
 jobs:
   build-and-push:
     name: Build, push and deploy 🏗️🚀
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: java-containers-k8s
+
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
@@ -34,7 +39,7 @@ jobs:
       - name: Use Helm
         uses: azure/setup-helm@v1
         with:
-            version: 'v3.13.2'
+          version: 'v3.13.2'
       - name: run helm upgrade
         run: ./helm_upgrade.sh ${{ steps.vars.outputs.sha_short }}
       - run: echo "🍏 Job's status is ${{ job.status }}."
