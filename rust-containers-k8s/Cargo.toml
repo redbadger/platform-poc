@@ -1,8 +1,0 @@
-[workspace]
-
-members = [
-    "inventory-service",
-    "notification-service",
-    "order-service",
-    "product-service"
-]
