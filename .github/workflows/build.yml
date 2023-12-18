@@ -7,6 +7,12 @@ on:
     paths:
       - 'java-containers-k8s/**'
 
+  pull_request:
+    branches:
+      - 'main'
+    paths:
+      - 'java-containers-k8s/**'
+
 jobs:
   build-and-push:
     name: Build, push and deploy 🏗️🚀
