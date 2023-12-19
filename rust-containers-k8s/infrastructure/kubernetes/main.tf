@@ -42,6 +42,12 @@ resource "kubernetes_service_account" "ksa" {
   }
 }
 
+resource "google_project_iam_member" "download-artifacts-role" {
+  project =  module.shared_vars.project_id
+  role   = "roles/artifactregistry.reader"
+  member  = "serviceAccount:${module.shared_vars.project_id}.svc.id.goog[default/${kubernetes_service_account.ksa.metadata[0].name}]"
+}
+
 resource "kubernetes_secret" "db_secrets" {
   metadata {
     name = "postgres-db-secrets"

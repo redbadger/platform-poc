@@ -11,10 +11,10 @@ terraform init
 terraform apply -auto-approve
 popd
 
-pushd registry
-terraform init
-terraform apply -auto-approve
-popd
+# pushd registry
+# terraform init
+# terraform apply -auto-approve
+# popd
 
 pushd storage
 terraform init
