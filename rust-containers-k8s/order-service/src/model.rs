@@ -1,6 +1,8 @@
+use uuid::Uuid;
+
 pub struct Order {
     id: i64,
-    order_number: String,
+    order_number: Uuid,
     line_items: Vec<LineItem>,
 }
 
