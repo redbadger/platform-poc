@@ -49,12 +49,11 @@ resource "google_project_iam_member" "datastore-user-role" {
   member  = "serviceAccount:${google_service_account.workload-identity-user-sa.email}"
 }
 
-resource "google_project_iam_member" "storage-role" {
+resource "google_project_iam_member" "artifact-registry-reader-role" {
   project = module.shared_vars.project_id
-  role    = "roles/storage.admin"
+  role    = "roles/artifactregistry.reader"
   member  = "serviceAccount:${google_service_account.workload-identity-user-sa.email}"
 }
-
 
 output "node_pool_service_account" {
   value = google_service_account.workload-identity-user-sa.email
