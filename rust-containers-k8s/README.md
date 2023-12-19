@@ -93,3 +93,13 @@ curl --location --request POST "http://${PRODUCT_SERVICE_INGRESS_IP}/api/product
         "skuCode": "iphone_14"
     }'
 ```
+
+## Development
+
+You can spin up the whole setup locally using docker-compose. You'll need to have docker and docker-compose installed.
+
+just run
+
+```sh
+docker compose up
+```
