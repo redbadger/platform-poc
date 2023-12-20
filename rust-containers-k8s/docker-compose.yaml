@@ -2,7 +2,7 @@
 version: '3.8'
 
 services:
-  db:
+  order-service:
     image: postgres:16.1
     restart: always
 
@@ -10,5 +10,15 @@ services:
       POSTGRES_PASSWORD: commerce
       POSTGRES_USER: commerce
       POSTGRES_DB: order-service
+    ports:
+      - 5432:5432
+  inventory-service:
+    image: postgres:16.1
+    restart: always
+
+    environment:
+      POSTGRES_PASSWORD: commerce
+      POSTGRES_USER: commerce
+      POSTGRES_DB: inventory-service-service
     ports:
       - 5432:5432

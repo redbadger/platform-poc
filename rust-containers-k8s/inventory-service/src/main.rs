@@ -1,6 +1,20 @@
-use std::{thread, time::Duration};
+use dotenv::dotenv;
+use inventory_service::{api::server, config::Config};
+use sqlx::postgres::PgPoolOptions;
 
-fn main() {
-    println!("Inventory service started");
-    thread::sleep(Duration::from_secs(60 * 60 * 24));
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    dotenv().ok();
+    let config = Config::new().expect("Config couldn't be loaded");
+
+    println!("{:?}", config);
+
+    let pool = PgPoolOptions::new()
+        .max_connections(5)
+        .connect("postgres://commerce:commerce@localhost/inventory-service")
+        .await?;
+
+    server::create(config, pool).await?;
+
+    Ok(())
 }
