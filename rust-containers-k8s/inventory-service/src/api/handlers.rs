@@ -1,12 +1,7 @@
-use std::sync::Arc;
-
-use axum::{
-    extract::{Query, State},
-    http::StatusCode,
-    response::Result,
-    Json,
-};
+use axum::{extract::State, http::StatusCode, response::Result, Json};
+use axum_extra::extract::Query;
 use serde::Deserialize;
+use std::sync::Arc;
 
 use super::{server::AppState, types::GetInventoryResponse};
 
@@ -26,9 +21,9 @@ pub struct InventoryQueryParams {
 
 pub async fn get_inventory(
     State(state): State<Arc<AppState>>,
-    query_params: Query<InventoryQueryParams>,
+    Query(params): Query<InventoryQueryParams>,
 ) -> Result<Json<Vec<GetInventoryResponse>>> {
-    let query = &query_params.sku_code;
+    let query = &params.sku_code;
 
     let result = vec![GetInventoryResponse {
         sku_code: "x".to_string(),
