@@ -1,6 +1,6 @@
 use super::server::AppState;
 use crate::api::types::{InventoryResponse, OrderRequest};
-use axum::{debug_handler, extract::State, http::StatusCode, Json};
+use axum::{debug_handler, extract::State, http::StatusCode, response::Result, Json};
 use std::sync::Arc;
 
 pub async fn root() -> &'static str {
@@ -15,7 +15,7 @@ pub async fn get_orders() -> &'static str {
 pub async fn create_order(
     State(state): State<Arc<AppState>>,
     Json(payload): Json<OrderRequest>,
-) -> Result<(), (StatusCode, String)> {
+) -> Result<()> {
     let query: Vec<(String, String)> = payload
         .items
         .iter()
