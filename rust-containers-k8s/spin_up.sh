@@ -1,3 +1,5 @@
+#!/bin/bash
+
 set -e
 
 pushd infrastructure
@@ -9,13 +11,18 @@ terraform init
 terraform apply -auto-approve
 popd
 
+# pushd registry
+# terraform init
+# terraform apply -auto-approve
+# popd
+
 pushd storage
 terraform init
 terraform apply -auto-approve
 popd
 
 echo "Authenticating with the cluster..."
-gcloud container clusters get-credentials platform-poc-407113-cluster --project platform-poc-407113 --location europe-west2
+gcloud container clusters get-credentials platform-poc-rust-cluster --project platform-poc-rust --location europe-west2
 echo "done!"
 
 pushd kubernetes
