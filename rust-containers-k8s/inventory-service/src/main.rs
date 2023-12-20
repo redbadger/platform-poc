@@ -14,6 +14,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .connect(&config.database_url)
         .await?;
 
+    sqlx::migrate!("./migrations")
+        .run(&pool)
+        .await
+        .expect("Couldn't run migrations");
+
     server::create(config, pool).await?;
 
     Ok(())
