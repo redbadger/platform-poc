@@ -11,7 +11,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let pool = PgPoolOptions::new()
         .max_connections(5)
-        .connect("postgres://commerce:commerce@localhost/inventory-service")
+        .connect(&config.database_url)
         .await?;
 
     server::create(config, pool).await?;

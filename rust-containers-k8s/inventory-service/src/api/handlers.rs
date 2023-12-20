@@ -27,10 +27,14 @@ pub struct InventoryQueryParams {
 pub async fn get_inventory(
     State(state): State<Arc<AppState>>,
     query_params: Query<InventoryQueryParams>,
-) -> Result<Json<GetInventoryResponse>> {
+) -> Result<Json<Vec<GetInventoryResponse>>> {
     let query = &query_params.sku_code;
 
-    Ok(())
+    let result = vec![GetInventoryResponse {
+        sku_code: "x".to_string(),
+        is_in_stock: true,
+    }];
+    Ok(Json(result))
 }
 
 /// Utility function for mapping any error into a `500 Internal Server Error`
