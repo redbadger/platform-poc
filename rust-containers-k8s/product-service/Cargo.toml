@@ -4,5 +4,16 @@ version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
+anyhow = "1.0.75"
+axum = { version = "0.7.2", features = ["json", "macros", "query"] }
+axum-extra = { version = "0.9.0", features = ["query"] }
+dotenv = "0.15.0"
+envy = "0.4.2"
+reqwest = { version = "0.11.23", features = ["json"] }
+serde = { version = "1.0.193", features = ["derive"] }
+serde_json = "1.0.108"
+tokio = { version = "1.35.0", features = ["full"] }
+tower-http = { version = "0.5.0", features = ["trace"] }
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
