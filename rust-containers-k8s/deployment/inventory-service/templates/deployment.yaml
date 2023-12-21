@@ -43,8 +43,6 @@ spec:
                   key: password
             - name: POSTGRES_URL
               value: jdbc:postgresql://127.0.0.1:5432/inventory-service
-            - name: PORT
-              value: 8082
           readinessProbe:
             httpGet:
               path: /actuator/health
