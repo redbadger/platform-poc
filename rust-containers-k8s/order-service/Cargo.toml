@@ -16,3 +16,6 @@ uuid = {  version = "1.6.1", features = ["v4", "serde"] }
 tokio-postgres = "0.7.10"
 anyhow = "1.0.75"
 sqlx = { version = "0.7.3", features = ["runtime-tokio", "postgres"] }
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
+
