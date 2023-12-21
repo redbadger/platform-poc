@@ -9,7 +9,7 @@ pub struct Config {
 
 mod defaults {
     pub const fn port() -> u16 {
-        8083
+        8080
     }
 }
 

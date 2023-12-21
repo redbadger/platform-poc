@@ -20,14 +20,13 @@ pub async fn get_all_products(
         .fluent()
         .select()
         .from("products")
-        .limit(10)
+        .limit(1000)
         .obj()
         .query()
         .await
         .map_err(internal_error)?;
-    Ok(Json(
-        products.into_iter().map(ProductResponse::from).collect(),
-    ))
+
+    Ok(Json(products.into_iter().map(Into::into).collect()))
 }
 
 #[axum::debug_handler]
@@ -35,13 +34,7 @@ pub async fn create_product(
     State(state): State<Arc<AppState>>,
     Json(payload): Json<ProductRequest>,
 ) -> Result<()> {
-    let product = Product {
-        id: uuid::Uuid::new_v4(),
-        name: payload.name,
-        description: payload.description,
-        price: payload.price,
-        sku_code: payload.sku_code,
-    };
+    let product: Product = payload.into();
 
     state
         .db
