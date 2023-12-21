@@ -8,7 +8,7 @@ use rdkafka::{
 async fn main() -> anyhow::Result<()> {
     println!("Notification service started");
 
-    let consumer = create_consumer("localhost:9092")?;
+    let consumer = create_consumer("localhost:29092")?;
 
     consumer.subscribe(&["OrderPlacedEvent"])?;
 
