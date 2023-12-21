@@ -31,18 +31,11 @@ spec:
               containerPort: 8082
               protocol: TCP
           env:
-            - name: POSTGRES_USERNAME
+            - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
                   name: postgres-db-secrets
-                  key: username
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: postgres-db-secrets
-                  key: password
-            - name: POSTGRES_URL
-              value: jdbc:postgresql://127.0.0.1:5432/inventory-service
+                  key: inventory_service_database_url
           readinessProbe:
             httpGet:
               path: /actuator/health
