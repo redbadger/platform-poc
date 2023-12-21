@@ -1,10 +1,7 @@
+use super::{server::AppState, types::ProductRequest};
+use crate::api::types::{Product, ProductResponse};
 use axum::{extract::State, http::StatusCode, response::Result, Json};
 use std::sync::Arc;
-
-use super::{
-    server::AppState,
-    types::{Product, ProductRequest},
-};
 
 pub async fn root() -> &'static str {
     "Hello, World!"
@@ -15,22 +12,49 @@ pub async fn health() -> &'static str {
 }
 
 #[axum::debug_handler]
-pub async fn get_all_products(State(_state): State<Arc<AppState>>) -> Result<Json<Vec<Product>>> {
-    Ok(Json(vec![Product {
-        id: 1,
-        name: "Product 1".to_string(),
-        description: "Product 1 description".to_string(),
-        price: 100,
-        sku_code: "SKU-1".to_string(),
-    }]))
+pub async fn get_all_products(
+    State(state): State<Arc<AppState>>,
+) -> Result<Json<Vec<ProductResponse>>> {
+    let products: Vec<Product> = state
+        .db
+        .fluent()
+        .select()
+        .from("products")
+        .limit(10)
+        .obj()
+        .query()
+        .await
+        .map_err(internal_error)?;
+    Ok(Json(
+        products.into_iter().map(ProductResponse::from).collect(),
+    ))
 }
 
 #[axum::debug_handler]
 pub async fn create_product(
-    State(_state): State<Arc<AppState>>,
-    Json(_payload): Json<ProductRequest>,
+    State(state): State<Arc<AppState>>,
+    Json(payload): Json<ProductRequest>,
 ) -> Result<()> {
-    todo!()
+    let product = Product {
+        id: uuid::Uuid::new_v4(),
+        name: payload.name,
+        description: payload.description,
+        price: payload.price,
+        sku_code: payload.sku_code,
+    };
+
+    state
+        .db
+        .fluent()
+        .insert()
+        .into("products")
+        .document_id(&product.id.to_string())
+        .object(&product)
+        .execute()
+        .await
+        .map_err(internal_error)?;
+
+    Ok(())
 }
 
 /// Utility function for mapping any error into a `500 Internal Server Error`

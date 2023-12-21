@@ -4,6 +4,7 @@ use serde::Deserialize;
 pub struct Config {
     #[serde(default = "defaults::port")]
     pub port: u16,
+    pub gcp_project_id: String,
 }
 
 mod defaults {

@@ -6,6 +6,7 @@ use axum::{
     routing::{get, post},
     Router,
 };
+use firestore::FirestoreDb;
 use std::{
     net::{IpAddr, Ipv4Addr, SocketAddr},
     sync::Arc,
@@ -13,10 +14,12 @@ use std::{
 use tokio::net::TcpListener;
 use tower_http::trace::TraceLayer;
 
-pub struct AppState {}
+pub struct AppState {
+    pub db: FirestoreDb,
+}
 
-pub async fn create(config: Config) -> anyhow::Result<()> {
-    let state = Arc::new(AppState {});
+pub async fn create(config: Config, db: FirestoreDb) -> anyhow::Result<()> {
+    let state = Arc::new(AppState { db });
 
     let app = Router::new()
         .route("/", get(root))
