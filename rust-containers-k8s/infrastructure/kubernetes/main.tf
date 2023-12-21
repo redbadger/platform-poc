@@ -9,14 +9,12 @@ module "shared_vars" {
 
 variable "pg_user" {
   description = "Username for Postgres Cloud SQL database"
+  default     = "commerce"
 }
 
 variable "pg_password" {
   description = "password for Postgres Cloud SQL database"
-}
-
-variable "pg_database" {
-  description = "Postgres Cloud SQL database name"
+  default     = "commerce"
 }
 
 data "terraform_remote_state" "workload-identity-user-sa" {
@@ -35,7 +33,7 @@ resource "google_project_iam_member" "workload_identity-role" {
 
 resource "kubernetes_service_account" "ksa" {
   metadata {
-    name        = "kubernetes-service-account"
+    name = "kubernetes-service-account"
     annotations = {
       "iam.gke.io/gcp-service-account" = data.terraform_remote_state.workload-identity-user-sa.outputs.node_pool_service_account
     }
@@ -48,8 +46,7 @@ resource "kubernetes_secret" "db_secrets" {
   }
 
   data = {
-    username = var.pg_user
-    password = var.pg_password
-    database = var.pg_database
+    inventory_service_database_url = "postgresql://${var.pg_user}:${var.pg_password}@127.0.0.1/inventory-service"
+    order_service_database_url     = "postgresql://${var.pg_user}:${var.pg_password}@127.0.0.1/order-service"
   }
 }

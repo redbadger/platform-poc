@@ -2,8 +2,15 @@ use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]
 pub struct Config {
+    #[serde(default = "defaults::port")]
     pub port: u16,
     pub database_url: String,
+}
+
+mod defaults {
+    pub const fn port() -> u16 {
+        8082
+    }
 }
 
 impl Config {
