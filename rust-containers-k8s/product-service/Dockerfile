@@ -27,7 +27,8 @@ RUN cargo build --release
 ####################################################################################################
 FROM debian:bookworm-slim
 
-RUN apt-get update && apt-get install libssl3
+RUN apt-get update && apt-get install libssl3 ca-certificates -y && rm -rf /var/lib/apt/lists/*
+RUN update-ca-certificates
 
 # Import from builder.
 COPY --from=builder /etc/passwd /etc/passwd
