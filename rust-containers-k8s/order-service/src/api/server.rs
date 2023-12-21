@@ -1,7 +1,6 @@
 use crate::api::handlers::{create_order, get_orders, health, root};
 use crate::config::Config;
 use axum::{routing::get, routing::post, Router};
-use reqwest::IntoUrl;
 use sqlx::{Pool, Postgres};
 use std::sync::Arc;
 

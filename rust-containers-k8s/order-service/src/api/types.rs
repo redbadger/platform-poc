@@ -15,7 +15,7 @@ pub struct OrderPlaceEvent {
 }
 
 #[derive(Deserialize)]
-pub struct OrderRequest {
+pub struct CreateOrderRequest {
     #[serde(rename = "orderLineItemsDtoList")]
     pub items: Vec<LineItemRequest>,
 }

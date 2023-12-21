@@ -1167,6 +1167,7 @@ dependencies = [
  "axum",
  "dotenv",
  "envy",
+ "itertools",
  "reqwest",
  "serde",
  "sqlx",
