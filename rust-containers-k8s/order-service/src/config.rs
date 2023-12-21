@@ -4,6 +4,7 @@ use serde::Deserialize;
 pub struct Config {
     pub port: u32,
     pub database_url: String,
+    pub inventory_service_url: String,
 }
 
 impl Config {

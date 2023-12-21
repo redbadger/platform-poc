@@ -1,9 +1,10 @@
 use serde::Deserialize;
 use uuid::Uuid;
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct InventoryResponse {
-    sku: String,
+    pub sku_code: String,
     pub is_in_stock: bool,
 }
 
@@ -15,12 +16,15 @@ pub struct OrderPlaceEvent {
 
 #[derive(Deserialize)]
 pub struct OrderRequest {
+    #[serde(rename = "orderLineItemsDtoList")]
     pub items: Vec<LineItemRequest>,
 }
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct LineItemRequest {
-    pub sku: String,
-    pub price_cents: isize,
+    pub id: String,
+    pub sku_code: String,
+    pub price: f32,
     pub quantity: i32,
 }

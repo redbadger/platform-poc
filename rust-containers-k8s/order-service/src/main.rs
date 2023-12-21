@@ -17,7 +17,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv().ok();
     let config = Config::new().expect("Can't read config");
 
-    println!("{:?}", config);
+    tracing::info!("{:?}", config);
 
     let pool = PgPoolOptions::new()
         .max_connections(5)
