@@ -38,7 +38,7 @@ spec:
                   key: inventory_service_database_url
           readinessProbe:
             httpGet:
-              path: /actuator/health
+              path: /health
               port: 8082
             initialDelaySeconds: 20
         - name: cloud-sql-proxy
@@ -49,4 +49,3 @@ spec:
             - {{ .Values.sql.instanceConnectionName }}
           securityContext:
             runAsNonRoot: true
-

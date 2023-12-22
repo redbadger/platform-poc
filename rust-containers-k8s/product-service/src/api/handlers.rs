@@ -1,4 +1,7 @@
-use super::{server::AppState, types::ProductRequest};
+use super::{
+    server::{AppState, COLLECTION_NAME},
+    types::ProductRequest,
+};
 use crate::api::types::{Product, ProductResponse};
 use axum::{extract::State, http::StatusCode, response::Result, Json};
 use std::sync::Arc;
@@ -19,7 +22,7 @@ pub async fn get_all_products(
         .db
         .fluent()
         .select()
-        .from("products")
+        .from(COLLECTION_NAME)
         .limit(1000)
         .obj()
         .query()
@@ -40,7 +43,7 @@ pub async fn create_product(
         .db
         .fluent()
         .insert()
-        .into("products")
+        .into(COLLECTION_NAME)
         .document_id(&product.id.to_string())
         .object(&product)
         .execute()
