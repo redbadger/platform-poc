@@ -9,12 +9,6 @@ pub struct InventoryResponse {
 }
 
 #[derive(Deserialize)]
-
-pub struct OrderPlaceEvent {
-    order_number: Uuid,
-}
-
-#[derive(Deserialize)]
 pub struct CreateOrderRequest {
     #[serde(rename = "orderLineItemsDtoList")]
     pub items: Vec<LineItemRequest>,

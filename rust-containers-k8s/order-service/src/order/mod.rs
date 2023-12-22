@@ -1,12 +1,25 @@
 pub mod database;
 
 use crate::api::types::{CreateOrderRequest, InventoryResponse, LineItemRequest};
+use anyhow::anyhow;
 use itertools::Itertools;
+use rdkafka::{
+    producer::{FutureProducer, FutureRecord},
+    ClientConfig,
+};
+use serde::{Deserialize, Serialize};
+use std::time::Duration;
 use url::Url;
 use uuid::Uuid;
 pub struct Order {
     pub id: Uuid,
     pub line_items: Vec<LineItem>,
+}
+
+#[derive(Deserialize, Serialize)]
+
+pub struct OrderPlaceEvent {
+    pub order_number: Uuid,
 }
 
 pub struct LineItem {
@@ -55,5 +68,32 @@ impl Order {
             .await?
             .iter()
             .all(|i| i.is_in_stock))
+    }
+
+    pub async fn send_notification(&self) -> Result<(), anyhow::Error> {
+        println!("sending message");
+        let producer: &FutureProducer = &ClientConfig::new()
+            .set("bootstrap.servers", "localhost:9093")
+            .set("message.timeout.ms", "5000")
+            .create()
+            .expect("Producer creation error");
+
+        let order_event = OrderPlaceEvent {
+            order_number: self.id,
+        };
+
+        let event = serde_json::to_vec(&order_event).map_err(|e| anyhow!(e))?;
+
+        producer
+            .send(
+                FutureRecord::to("test-topic")
+                    .payload(&event)
+                    .key(&format!("Key {}", self.id)),
+                Duration::from_secs(2),
+            )
+            .await
+            .map_err(|e| anyhow!(format!("{}", e.0)))?;
+        println!("sent message");
+        Ok(())
     }
 }

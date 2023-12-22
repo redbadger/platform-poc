@@ -1,5 +1,9 @@
 use dotenv::dotenv;
 use order_service::{api::server, config::Config};
+use rdkafka::{
+    consumer::{Consumer, StreamConsumer},
+    ClientConfig, Message,
+};
 use sqlx::postgres::PgPoolOptions;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -25,7 +29,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await?;
 
     sqlx::migrate!().run(&pool).await?;
-
     server::create(config, pool).await?;
     Ok(())
 }

@@ -34,6 +34,7 @@ pub async fn create_order(
             .await
             .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
     }
+    order.send_notification().await.unwrap();
     Ok(format!("Order Number {} Placed Successfully", order.id))
 }
 
