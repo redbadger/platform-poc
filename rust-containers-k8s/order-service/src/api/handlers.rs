@@ -16,6 +16,7 @@ pub async fn create_order(
     State(state): State<Arc<AppState>>,
     Json(payload): Json<CreateOrderRequest>,
 ) -> Result<String> {
+    let kafka = &state.kafka_producer;
     let query: Vec<(String, String)> = payload
         .items
         .iter()
@@ -34,7 +35,10 @@ pub async fn create_order(
             .await
             .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
     }
-    order.send_notification().await.unwrap();
+    order
+        .send_create_notification(kafka)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
     Ok(format!("Order Number {} Placed Successfully", order.id))
 }
 

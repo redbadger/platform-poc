@@ -5,6 +5,7 @@ pub struct Config {
     pub port: u32,
     pub database_url: String,
     pub inventory_service_url: String,
+    pub kafka_url: String,
 }
 
 impl Config {

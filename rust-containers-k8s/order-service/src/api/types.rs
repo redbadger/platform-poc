@@ -1,5 +1,4 @@
 use serde::Deserialize;
-use uuid::Uuid;
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]

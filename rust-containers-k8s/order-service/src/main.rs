@@ -1,9 +1,6 @@
 use dotenv::dotenv;
 use order_service::{api::server, config::Config};
-use rdkafka::{
-    consumer::{Consumer, StreamConsumer},
-    ClientConfig, Message,
-};
+use rdkafka::{producer::FutureProducer, ClientConfig};
 use sqlx::postgres::PgPoolOptions;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -21,6 +18,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv().ok();
     let config = Config::new().expect("Can't read config");
 
+    let kafka_producer: FutureProducer = ClientConfig::new()
+        .set("bootstrap.servers", &config.kafka_url)
+        .set("message.timeout.ms", "5000")
+        .create()
+        .expect("Producer creation error");
+
     tracing::info!("{:?}", config);
 
     let pool = PgPoolOptions::new()
@@ -29,6 +32,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await?;
 
     sqlx::migrate!().run(&pool).await?;
-    server::create(config, pool).await?;
+    server::create(config, pool, kafka_producer).await?;
     Ok(())
 }
