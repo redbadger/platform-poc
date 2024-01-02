@@ -2,7 +2,7 @@ use super::{
     server::{AppState, COLLECTION_NAME},
     types::ProductRequest,
 };
-use crate::api::types::{Product, ProductResponse};
+use crate::{api::types::ProductResponse, model::Product};
 use axum::{extract::State, http::StatusCode, response::Result, Json};
 use std::sync::Arc;
 

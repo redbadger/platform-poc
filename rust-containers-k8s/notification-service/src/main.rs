@@ -13,8 +13,6 @@ use std::time::Duration;
 use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-const TOPIC: &str = "test-topic";
-
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     tracing_subscriber::registry()
@@ -31,16 +29,16 @@ async fn main() -> anyhow::Result<()> {
     let config = Config::new()?;
     info!("{:?}", config);
 
-    let config = create_config(&config.kafka_url);
+    let kafka = create_config(&config.kafka_url);
 
     // Create the topic if it does not exist
     // this leaves something to be desired, but it works for now
-    match fetch_metadata(TOPIC, &config) {
+    match fetch_metadata(&config.kafka_topic, &kafka) {
         Err(_) => {
-            create_admin_client(&config)?
+            create_admin_client(&kafka)?
                 .create_topics(
                     &[NewTopic {
-                        name: TOPIC,
+                        name: &config.kafka_topic,
                         num_partitions: 1,
                         replication: TopicReplication::Fixed(1),
                         config: vec![],
@@ -52,8 +50,8 @@ async fn main() -> anyhow::Result<()> {
         _ => (),
     };
 
-    let consumer = create_consumer(&config)?;
-    consumer.subscribe(&[TOPIC])?;
+    let consumer = create_consumer(&kafka)?;
+    consumer.subscribe(&[&config.kafka_topic])?;
 
     loop {
         let message = consumer.recv().await?;
