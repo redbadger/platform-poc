@@ -1,0 +1,50 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT \"order\".id as order_id,\n  \"order\".order_number,\n  \"line_items\".id as item_id,\n  \"line_items\".sku_code,\n  \"line_items\".price,\n  \"line_items\".quantity\nFROM t_order_line_items as line_items\n  JOIN t_orders_order_line_items_list as order_lines ON \"order_lines\".order_line_items_list_id = \"line_items\".id\n  JOIN t_orders as \"order\" ON \"order\".id = \"order_lines\".order_id\n",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "order_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "order_number",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "item_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 3,
+        "name": "sku_code",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "price",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 5,
+        "name": "quantity",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      true,
+      false,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "ec32a82d65e640cdf1ce55786cbbb431943ce608a6446e516da346adb93e2733"
+}
