@@ -2,7 +2,16 @@ use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]
 pub struct Config {
-    pub port: u32,
+    #[serde(default = "defaults::port")]
+    pub port: u16,
+    pub database_url: String,
+    pub kafka_url: String,
+}
+
+mod defaults {
+    pub const fn port() -> u16 {
+        8081
+    }
 }
 
 impl Config {

@@ -1,18 +1,30 @@
 use dotenv::dotenv;
-use notification_service::config::Config;
-use notification_service::types::OrderPlacedEvent;
-use rdkafka::config::RDKafkaLogLevel;
-use rdkafka::consumer::{Consumer as SecondConsumer, StreamConsumer};
-use rdkafka::{ClientConfig, Message};
+use notification_service::{config::Config, types::OrderPlacedEvent};
+use rdkafka::{
+    config::RDKafkaLogLevel,
+    consumer::{Consumer as SecondConsumer, StreamConsumer},
+    ClientConfig, Message,
+};
+use tracing::info;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    tracing_subscriber::registry()
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
+                "notification_service=debug,tower_http=debug,axum::rejection=trace".into()
+            }),
+        )
+        .with(tracing_subscriber::fmt::layer())
+        .init();
+
     dotenv().ok();
-    println!("Notification service started");
-    let config = Config::new().expect("No Config provided");
+
+    let config = Config::new()?;
+    info!("{:?}", config);
 
     let consumer = create_consumer(&config.kafka_url)?;
-
     consumer.subscribe(&["test-topic"])?;
 
     loop {
@@ -24,8 +36,8 @@ async fn main() -> anyhow::Result<()> {
         let content: Result<OrderPlacedEvent, serde_json::Error> = serde_json::from_slice(message);
 
         match content {
-            Ok(order) => println!("Received Notification for Order - {}", order.order_number),
-            Err(_) => println!("Error decoding notification order"),
+            Ok(order) => info!("Received Notification for Order - {}", order.order_number),
+            Err(_) => info!("Error decoding notification order"),
         }
     }
 }

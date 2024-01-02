@@ -2,7 +2,11 @@ use crate::api::handlers::{create_order, get_orders, health, root};
 use crate::config::Config;
 use axum::{routing::get, routing::post, Router};
 use sqlx::{Pool, Postgres};
-use std::sync::Arc;
+use std::{
+    net::{IpAddr, Ipv4Addr, SocketAddr},
+    sync::Arc,
+};
+use tokio::net::TcpListener;
 
 pub struct AppState {
     pub pool: Pool<Postgres>,
@@ -11,7 +15,6 @@ pub struct AppState {
 pub async fn create(config: Config, pool: Pool<Postgres>) -> anyhow::Result<()> {
     let state = Arc::new(AppState { pool });
 
-    // build our application with a route
     let app = Router::new()
         .route("/", get(root))
         .route("/health", get(health))
@@ -19,11 +22,12 @@ pub async fn create(config: Config, pool: Pool<Postgres>) -> anyhow::Result<()> 
         .route("/api/order", post(create_order))
         .with_state(state);
 
-    // run it
-    //todo pass a port
-    let listener = tokio::net::TcpListener::bind(format!("127.0.0.1:{}", config.port)).await?;
-    println!("listening on {}", listener.local_addr()?);
-    axum::serve(listener, app).await?;
+    let socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), config.port);
+    let listener = TcpListener::bind(&socket).await.unwrap();
+    tracing::info!("listening on {}", socket);
+    axum::serve(listener, app.into_make_service())
+        .await
+        .unwrap();
 
     Ok(())
 }

@@ -1,18 +1,28 @@
 use dotenv::dotenv;
 use order_service::{api::server, config::Config};
 use sqlx::postgres::PgPoolOptions;
+use tracing::info;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    dotenv().ok();
-    let config = Config::new()?;
+    tracing_subscriber::registry()
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
+                "order_service=debug,tower_http=debug,axum::rejection=trace".into()
+            }),
+        )
+        .with(tracing_subscriber::fmt::layer())
+        .init();
 
-    println!("{:?}", config);
+    dotenv().ok();
+
+    let config = Config::new()?;
+    info!("{:?}", config);
 
     let pool = PgPoolOptions::new()
         .max_connections(5)
-        // TODO: paramterise this
-        .connect("postgres://commerce:commerce@localhost/order-service")
+        .connect(&config.database_url)
         .await?;
 
     server::create(config, pool).await?;
