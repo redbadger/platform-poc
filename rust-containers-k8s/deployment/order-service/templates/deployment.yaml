@@ -41,7 +41,7 @@ spec:
               value: {{ .Values.kafka.url }}
           readinessProbe:
             httpGet:
-              path: /actuator/health
+              path: /health
               port: 8081
             initialDelaySeconds: 20
         - name: cloud-sql-proxy
@@ -52,4 +52,3 @@ spec:
             - {{ .Values.sql.instanceConnectionName }}
           securityContext:
             runAsNonRoot: true
-

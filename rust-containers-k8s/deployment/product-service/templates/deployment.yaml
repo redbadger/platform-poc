@@ -35,7 +35,6 @@ spec:
               value: {{ .Values.gcp.projectId }}
           readinessProbe:
             httpGet:
-              path: /actuator/health
+              path: /health
               port: 8080
             initialDelaySeconds: 20
-

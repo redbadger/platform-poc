@@ -25,7 +25,7 @@ pub async fn create(config: Config, pool: Pool<Postgres>) -> anyhow::Result<()> 
         .layer(TraceLayer::new_for_http())
         .with_state(state);
 
-    let socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), config.port);
+    let socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), config.port);
 
     let listener = TcpListener::bind(&socket).await.unwrap();
 
