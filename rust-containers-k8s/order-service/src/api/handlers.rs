@@ -4,10 +4,7 @@ use crate::{
     model::Order,
 };
 use axum::{debug_handler, extract::State, http::StatusCode, response::Result, Json};
-use rdkafka::{
-    message::{Header, OwnedHeaders},
-    producer::FutureRecord,
-};
+use rdkafka::producer::FutureRecord;
 use std::{sync::Arc, time::Duration};
 
 pub async fn root() -> &'static str {
@@ -147,12 +144,8 @@ pub async fn create_order(
             .producer
             .send(
                 FutureRecord::to(&state.config.kafka_topic)
-                    .payload(&format!("Message {}", 1))
-                    .key(&format!("Key {}", 1))
-                    .headers(OwnedHeaders::new().insert(Header {
-                        key: "header_key",
-                        value: Some("header_value"),
-                    })),
+                    .payload(&serde_json::to_string(&order).map_err(internal_error)?)
+                    .key(&format!("Key {}", order.order_number)),
                 Duration::from_secs(0),
             )
             .await

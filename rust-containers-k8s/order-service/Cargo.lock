@@ -1248,6 +1248,7 @@ dependencies = [
  "rdkafka",
  "reqwest",
  "serde",
+ "serde_json",
  "sqlx",
  "tokio",
  "tokio-postgres",
