@@ -1,7 +1,7 @@
-use super::types::Product;
 use crate::{
     api::handlers::{create_product, get_all_products, health, root},
     config::Config,
+    model::Product,
 };
 use axum::{
     routing::{get, post},

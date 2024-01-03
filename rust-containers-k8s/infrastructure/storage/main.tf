@@ -53,7 +53,7 @@ resource "google_firestore_database" "datastore_database" {
   project                 = module.shared_vars.project_id
   name                    = "(default)"
   location_id             = module.shared_vars.region
-  type                    = "DATASTORE_MODE"
+  type                    = "FIRESTORE_NATIVE"
   delete_protection_state = "DELETE_PROTECTION_DISABLED"
   deletion_policy         = "DELETE"
 }

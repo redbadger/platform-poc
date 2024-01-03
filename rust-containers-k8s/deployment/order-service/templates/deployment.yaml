@@ -31,7 +31,8 @@ spec:
               containerPort: 8081
               protocol: TCP
           env:
-          env:
+            - name: PORT
+              value: "8081"
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:

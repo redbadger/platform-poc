@@ -1,6 +1,7 @@
 use dotenv::dotenv;
 use inventory_service::{api::server, config::Config};
 use sqlx::postgres::PgPoolOptions;
+use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[tokio::main]
@@ -15,9 +16,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .init();
 
     dotenv().ok();
-    let config = Config::new().expect("Config couldn't be loaded");
 
-    tracing::info!("{:?}", config);
+    let config = Config::new()?;
+    info!("{:?}", config);
 
     let pool = PgPoolOptions::new()
         .max_connections(5)

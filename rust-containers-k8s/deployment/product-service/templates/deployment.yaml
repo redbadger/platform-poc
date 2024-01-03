@@ -31,6 +31,8 @@ spec:
               containerPort: 8080
               protocol: TCP
           env:
+            - name: PORT
+              value: "8080"
             - name: GCP_PROJECT_ID
               value: {{ .Values.gcp.projectId }}
           readinessProbe:
