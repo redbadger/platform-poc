@@ -33,12 +33,11 @@ pub async fn get_inventory(
                 .fetch_optional(&state.pool)
                 .await
                 .map_err(internal_error)?;
-        if let Some(row) = row {
-            result.push(GetInventoryResponse {
-                sku_code: sku.to_string(),
-                is_in_stock: row.0 > 0,
-            })
-        };
+        let is_in_stock = row.map(|(quantity,)| quantity > 0).unwrap_or(false);
+        result.push(GetInventoryResponse {
+            sku_code: sku.to_string(),
+            is_in_stock,
+        });
     }
 
     Ok(Json(result))
