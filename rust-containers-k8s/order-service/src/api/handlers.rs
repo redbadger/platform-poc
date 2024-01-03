@@ -1,4 +1,7 @@
-use super::{server::AppState, types::DbLineItem};
+use super::{
+    server::AppState,
+    types::{DbLineItem, OrderPlaceEvent},
+};
 use crate::{
     api::types::{InventoryResponse, OrderRequest},
     model::Order,
@@ -71,8 +74,7 @@ pub async fn create_order(
     // takes a request of a list of order line items, checks they are all in stock (http call to the inventory service) and if so, creates an order entry in the database
     let client = reqwest::Client::new();
     let all_in_stock = client
-        // TODO: update this url
-        .get("http://inventory-service/api/inventory")
+        .get(&state.config.inventory_url)
         .query(&query)
         .send()
         .await
@@ -144,7 +146,12 @@ pub async fn create_order(
             .producer
             .send(
                 FutureRecord::to(&state.config.kafka_topic)
-                    .payload(&serde_json::to_string(&order).map_err(internal_error)?)
+                    .payload(
+                        &serde_json::to_string(&OrderPlaceEvent {
+                            order_number: order.order_number,
+                        })
+                        .map_err(internal_error)?,
+                    )
                     .key(&format!("Key {}", order.order_number)),
                 Duration::from_secs(0),
             )
@@ -155,7 +162,8 @@ pub async fn create_order(
                 internal_error(e.0)
             })?;
         Ok(
-            format!("Order Number {order_id} Placed Successfully, kafka status {delivery_status}")
+            format!("Order Number {order_id} ({order_number}) Placed Successfully, kafka status {delivery_status}",
+                order_number = order.order_number)
                 .to_string(),
         )
     } else {

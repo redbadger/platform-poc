@@ -8,6 +8,8 @@ pub struct Config {
     pub kafka_url: String,
     #[serde(default = "defaults::topic")]
     pub kafka_topic: String,
+    #[serde(default = "defaults::inventory_url")]
+    pub inventory_url: String,
 }
 
 mod defaults {
@@ -17,6 +19,10 @@ mod defaults {
 
     pub fn topic() -> String {
         "orders".to_string()
+    }
+
+    pub fn inventory_url() -> String {
+        "http://inventory-service/api/inventory".to_string()
     }
 }
 

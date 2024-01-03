@@ -25,7 +25,6 @@ price numeric(19, 2),
 quantity integer,
 sku_code character varying(255)
 );
--- ALTER TABLE public.t_order_line_items OWNER TO "order-service";
 --
 -- Name: t_order_line_items_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
@@ -42,7 +41,6 @@ CREATE TABLE public.t_orders (
 id bigint NOT NULL,
 order_number character varying(255)
 );
--- ALTER TABLE public.t_orders OWNER TO "order-service";
 --
 -- Name: t_orders_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
@@ -59,7 +57,6 @@ CREATE TABLE public.t_orders_order_line_items_list (
 order_id bigint NOT NULL,
 order_line_items_list_id bigint NOT NULL
 );
--- ALTER TABLE public.t_orders_order_line_items_list OWNER TO "order-service";
 --
 -- Name: t_order_line_items t_order_line_items_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --

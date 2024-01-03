@@ -59,11 +59,14 @@ async fn main() -> anyhow::Result<()> {
         let Some(message) = payload else {
             continue;
         };
-        let content: Result<OrderPlacedEvent, serde_json::Error> = serde_json::from_slice(message);
 
-        match content {
-            Ok(order) => info!("Received Notification for Order - {}", order.order_number),
-            Err(_) => info!("Error decoding notification order"),
+        if let Ok(order) = serde_json::from_slice::<OrderPlacedEvent>(message) {
+            info!("Received Notification for Order - {}", order.order_number);
+        } else {
+            info!(
+                "Error decoding notification order: {:?}",
+                std::str::from_utf8(message)?
+            );
         }
     }
 }

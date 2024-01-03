@@ -1,5 +1,5 @@
 use crate::model::{LineItem, Order};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use sqlx::types::BigDecimal;
 use uuid::Uuid;
 
@@ -10,7 +10,8 @@ pub struct InventoryResponse {
     pub is_in_stock: bool,
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 
 pub struct OrderPlaceEvent {
     pub order_number: Uuid,
