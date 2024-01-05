@@ -5,7 +5,8 @@
     "rust-containers-k8s/inventory-service/Cargo.toml",
     "rust-containers-k8s/notification-service/Cargo.toml",
     "rust-containers-k8s/order-service/Cargo.toml",
-    "rust-containers-k8s/product-service/Cargo.toml"
+    "rust-containers-k8s/product-service/Cargo.toml",
+    "rust-wasmcloud/products/Cargo.toml"
   ],
   "sqltools.connections": [
     {
