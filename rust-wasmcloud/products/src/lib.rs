@@ -10,7 +10,12 @@ wit_bindgen::generate!({
 
 use api::types::ProductRequest;
 use exports::wasi::http::incoming_handler::Guest;
-use wasi::{http::types::*, io::streams::StreamError};
+use model::Product;
+use wasi::{
+    http::types::*,
+    io::streams::StreamError,
+    keyvalue::types::{new_outgoing_value, outgoing_value_write_body_sync},
+};
 
 struct HttpServer;
 
@@ -51,12 +56,27 @@ impl Guest for HttpServer {
                         }
                         match serde_json::from_slice::<ProductRequest>(&buf) {
                             Ok(req) => {
+                                let product: Product = req.into();
+
+                                let bucket = wasi::keyvalue::types::open_bucket("")
+                                    .expect("failed to open empty bucket");
+
+                                let outgoing_value = new_outgoing_value();
+                                let bytes =
+                                    serde_json::to_vec(&product).expect("failed to serialize");
+                                outgoing_value_write_body_sync(outgoing_value, &bytes)
+                                    .expect("failed to write outgoing value");
+                                wasi::keyvalue::readwrite::set(
+                                    bucket,
+                                    &product.id.to_string(),
+                                    outgoing_value,
+                                )
+                                .expect("failed to set value in bucket");
+
                                 response_body
                                     .write()
                                     .unwrap()
-                                    .blocking_write_and_flush(
-                                        serde_json::to_string(&req).unwrap().as_bytes(),
-                                    )
+                                    .blocking_write_and_flush(&bytes)
                                     .unwrap();
 
                                 response.set_status_code(201).unwrap();
