@@ -8,7 +8,7 @@ use thiserror::Error;
 #[derive(Error, Debug)]
 pub enum Error {
     #[error("Deserialization error")]
-    Serde(serde_json::Error),
+    Serde(#[from] serde_json::Error),
     #[error("HTTP error")]
     Http(#[from] http::Error),
 }
@@ -20,12 +20,14 @@ impl<T: DeserializeOwned> TryFrom<IncomingRequest> for http::Request<Option<T>> 
         let method: http::Method = value.method().into();
         let path_with_query = &value.path_with_query().unwrap();
         let uri = path_with_query.as_str();
+
         let body = value
             .consume() // takes self by ref so we need to keep body around
             .expect("failed to get incoming request body");
         let stream = body // don't inline `body` as it won't consume
             .stream()
             .expect("failed to get incoming request stream");
+
         let mut buf = vec![];
         loop {
             let chunk = match stream.read(1024) {
@@ -38,16 +40,19 @@ impl<T: DeserializeOwned> TryFrom<IncomingRequest> for http::Request<Option<T>> 
             };
             buf.extend_from_slice(&chunk);
         }
+
         let body: Option<T> = if buf.is_empty() {
             None
         } else {
-            Some(serde_json::from_slice(&buf).map_err(|e| Error::Serde(e))?)
+            Some(serde_json::from_slice(&buf)?)
         };
-        http::Request::builder()
+
+        let request = http::Request::builder()
             .method(method)
             .uri(uri)
-            .body(body)
-            .map_err(|e| e.into())
+            .body(body)?;
+
+        Ok(request)
     }
 }
 
@@ -78,6 +83,7 @@ impl From<http::Response<String>> for OutgoingResponse {
             .unwrap()
             .blocking_write_and_flush(value.body().as_bytes())
             .unwrap();
+
         response.set_status_code(value.status().as_u16()).unwrap();
 
         OutgoingBody::finish(response_body, None).expect("failed to finish response body");
