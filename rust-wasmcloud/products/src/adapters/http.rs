@@ -1,6 +1,5 @@
 use crate::wasi::{
-    self,
-    http::types::{IncomingRequest, Method},
+    http::types::{Fields, IncomingRequest, Method, OutgoingBody, OutgoingResponse},
     io::streams::StreamError,
 };
 use serde::de::DeserializeOwned;
@@ -52,7 +51,7 @@ impl<T: DeserializeOwned> TryFrom<IncomingRequest> for http::Request<Option<T>> 
     }
 }
 
-impl From<wasi::http::types::Method> for http::Method {
+impl From<Method> for http::Method {
     fn from(value: Method) -> Self {
         match value {
             Method::Get => http::Method::GET,
@@ -66,5 +65,22 @@ impl From<wasi::http::types::Method> for http::Method {
             Method::Trace => http::Method::TRACE,
             Method::Other(value) => http::Method::from_bytes(value.as_bytes()).unwrap(),
         }
+    }
+}
+
+impl From<http::Response<String>> for OutgoingResponse {
+    fn from(value: http::Response<String>) -> Self {
+        let response = OutgoingResponse::new(Fields::new());
+        let response_body = response.body().unwrap();
+
+        response_body
+            .write()
+            .unwrap()
+            .blocking_write_and_flush(value.body().as_bytes())
+            .unwrap();
+        response.set_status_code(value.status().as_u16()).unwrap();
+
+        OutgoingBody::finish(response_body, None).expect("failed to finish response body");
+        response
     }
 }
