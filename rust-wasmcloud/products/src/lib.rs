@@ -9,14 +9,11 @@ wit_bindgen::generate!({
     },
 });
 
+use adapters::keyvalue;
 use api::types::ProductRequest;
 use exports::wasi::http::incoming_handler::Guest;
 use http::{Request, Response};
 use model::Product;
-use wasi::keyvalue::{
-    readwrite::set,
-    types::{new_outgoing_value, open_bucket, outgoing_value_write_body_sync},
-};
 
 struct HttpServer;
 
@@ -30,22 +27,19 @@ impl Guest for HttpServer {
         let response: Response<String> = match request {
             Ok(req) => match req.uri().path() {
                 "/api/product" => match req.method().to_owned() {
-                    http::Method::GET => Response::builder()
-                        .status(200)
-                        .body("Hello from Rust!\n".to_string())
-                        .expect("failed to build response"),
+                    http::Method::GET => {
+                        let products = keyvalue::get_all::<Product>("products").unwrap();
+
+                        Response::builder()
+                            .status(200)
+                            .body(serde_json::to_string(&products).unwrap())
+                            .expect("failed to build response")
+                    }
                     http::Method::POST => {
                         if let Some(body) = req.into_body() {
                             let product: Product = body.into();
 
-                            let outgoing_value = new_outgoing_value();
-                            let bytes = serde_json::to_vec(&product).expect("failed to serialize");
-                            outgoing_value_write_body_sync(outgoing_value, &bytes)
-                                .expect("failed to write outgoing value");
-
-                            let bucket = open_bucket("").expect("failed to open empty bucket");
-                            set(bucket, &product.id.to_string(), outgoing_value)
-                                .expect("failed to set value in bucket");
+                            keyvalue::set("", &product.id.to_string(), &product).unwrap();
 
                             Response::builder()
                                 .status(201)

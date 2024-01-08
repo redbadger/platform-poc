@@ -2,6 +2,7 @@ package wasmcloud:hello;
 
 world hello {
   import wasi:keyvalue/atomic;
+  import wasi:keyvalue/batch;
   import wasi:keyvalue/readwrite;
   import wasi:logging/logging;
 

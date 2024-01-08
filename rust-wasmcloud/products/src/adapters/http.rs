@@ -7,7 +7,7 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum Error {
-    #[error("Deserialization error")]
+    #[error("Serialization error")]
     Serde(#[from] serde_json::Error),
     #[error("HTTP error")]
     Http(#[from] http::Error),
@@ -16,7 +16,7 @@ pub enum Error {
 impl<T: DeserializeOwned> TryFrom<IncomingRequest> for http::Request<Option<T>> {
     type Error = Error;
 
-    fn try_from(value: IncomingRequest) -> anyhow::Result<Self, Self::Error> {
+    fn try_from(value: IncomingRequest) -> Result<Self, Self::Error> {
         let method: http::Method = value.method().into();
         let path_with_query = &value.path_with_query().unwrap();
         let uri = path_with_query.as_str();
