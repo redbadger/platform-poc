@@ -1,7 +1,9 @@
 use crate::{
-    api::handlers::{create_product, get_all_products, health, root},
+    api::{
+        core::StoreError,
+        handlers::{create_product, get_all_products, health},
+    },
     config::Config,
-    model::Product,
 };
 use axum::{
     routing::{get, post},
@@ -15,19 +17,52 @@ use std::{
 use tokio::net::TcpListener;
 use tower_http::trace::TraceLayer;
 
+use super::core::{Product, Service, Store};
+
 pub const COLLECTION_NAME: &str = "products";
 
 pub struct AppState {
-    pub db: FirestoreDb,
+    pub service: Service<FirestoreStore>,
+}
+
+pub struct FirestoreStore {
+    db: FirestoreDb,
+}
+
+impl Store for FirestoreStore {
+    async fn insert_product(&self, product: Product) -> Result<(), StoreError> {
+        self.db
+            .fluent()
+            .insert()
+            .into(COLLECTION_NAME)
+            .document_id(&product.id.to_string())
+            .object(&product)
+            .execute()
+            .await
+            .map_err(|e| StoreError::Other(e.to_string()))
+    }
+
+    async fn get_all_products(&self) -> Result<Vec<Product>, StoreError> {
+        self.db
+            .fluent()
+            .select()
+            .from(COLLECTION_NAME)
+            .limit(1000)
+            .obj()
+            .query()
+            .await
+            .map_err(|e| StoreError::Other(e.to_string()))
+    }
 }
 
 pub async fn create(config: Config, db: FirestoreDb) -> anyhow::Result<()> {
     populate_firestore(&db).await?;
 
-    let state = Arc::new(AppState { db });
+    let state = Arc::new(AppState {
+        service: Service::new(FirestoreStore { db }),
+    });
 
     let app = Router::new()
-        .route("/", get(root))
         .route("/health", get(health))
         .route("/api/product", post(create_product))
         .route("/api/product", get(get_all_products))

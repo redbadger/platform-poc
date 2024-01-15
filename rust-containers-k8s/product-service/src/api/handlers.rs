@@ -1,14 +1,7 @@
-use super::{
-    server::{AppState, COLLECTION_NAME},
-    types::ProductRequest,
-};
-use crate::{api::types::ProductResponse, model::Product};
+use super::{server::AppState, types::ProductRequest};
+use crate::api::{core::Product, types::ProductResponse};
 use axum::{extract::State, http::StatusCode, response::Result, Json};
 use std::sync::Arc;
-
-pub async fn root() -> &'static str {
-    "Hello, World!"
-}
 
 pub async fn health() -> &'static str {
     "ok"
@@ -19,13 +12,8 @@ pub async fn get_all_products(
     State(state): State<Arc<AppState>>,
 ) -> Result<Json<Vec<ProductResponse>>> {
     let products: Vec<Product> = state
-        .db
-        .fluent()
-        .select()
-        .from(COLLECTION_NAME)
-        .limit(1000)
-        .obj()
-        .query()
+        .service
+        .list_products()
         .await
         .map_err(internal_error)?;
 
@@ -40,13 +28,8 @@ pub async fn create_product(
     let product: Product = payload.into();
 
     state
-        .db
-        .fluent()
-        .insert()
-        .into(COLLECTION_NAME)
-        .document_id(&product.id.to_string())
-        .object(&product)
-        .execute()
+        .service
+        .create_product(product)
         .await
         .map_err(internal_error)?;
 

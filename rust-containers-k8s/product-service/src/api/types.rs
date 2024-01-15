@@ -1,6 +1,7 @@
-use crate::model::Product;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+
+use super::core::Product;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
