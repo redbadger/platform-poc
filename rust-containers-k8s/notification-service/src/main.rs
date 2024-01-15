@@ -1,6 +1,9 @@
 use backoff::{retry, ExponentialBackoff};
 use dotenv::dotenv;
-use notification_service::{config::Config, types::OrderPlacedEvent};
+use notification_service::{
+    config::Config,
+    core::{Logger, OrderPlacedEvent, Service},
+};
 use rdkafka::{
     admin::{AdminClient, AdminOptions, NewTopic, TopicReplication},
     client::DefaultClientContext,
@@ -12,6 +15,14 @@ use rdkafka::{
 use std::time::Duration;
 use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+
+struct TracingLogger;
+
+impl Logger for TracingLogger {
+    fn info(&self, msg: &str) {
+        info!("{}", msg);
+    }
+}
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -53,6 +64,8 @@ async fn main() -> anyhow::Result<()> {
     let consumer = create_consumer(&kafka)?;
     consumer.subscribe(&[&config.kafka_topic])?;
 
+    let service = Service::new(TracingLogger);
+
     loop {
         let message = consumer.recv().await?;
         let payload = message.payload();
@@ -61,7 +74,7 @@ async fn main() -> anyhow::Result<()> {
         };
 
         if let Ok(order) = serde_json::from_slice::<OrderPlacedEvent>(message) {
-            info!("Received Notification for Order - {}", order.order_number);
+            service.recv(order);
         } else {
             info!(
                 "Error decoding notification order: {:?}",
