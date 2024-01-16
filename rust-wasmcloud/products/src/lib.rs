@@ -1,80 +1,41 @@
-mod adapters;
-mod api;
-mod model;
+use exports::platform_poc::products::products::Guest;
+use platform_poc::products::types::{Error, Product};
 
+// Use WIT bindgen instead of cargo component bindgen because ... generated files in target/ are icky
 wit_bindgen::generate!({
-    world: "hello",
+    world: "product-service",
     exports: {
-        "wasi:http/incoming-handler": HttpServer,
-    },
+        "platform-poc:products/products": Component,
+    }
 });
 
-use adapters::keyvalue;
-use api::types::ProductRequest;
-use exports::wasi::http::incoming_handler::Guest;
-use http::{Request, Response};
-use model::Product;
+struct Component;
 
-struct HttpServer;
+impl Guest for Component {
+    fn start() -> Result<(), Error> {
+        Ok(())
+    }
 
-impl Guest for HttpServer {
-    fn handle(
-        request: wasi::http::types::IncomingRequest,
-        response_out: wasi::http::types::ResponseOutparam,
-    ) {
-        let request = Request::<Option<ProductRequest>>::try_from(request);
+    fn create_product(product: Product) -> Result<(), Error> {
+        Ok(())
+    }
 
-        let response: Response<String> = match request {
-            Ok(req) => match req.uri().path() {
-                "/api/product" => match req.method().to_owned() {
-                    http::Method::GET => {
-                        let products = keyvalue::get_all::<Product>("products").unwrap();
-
-                        Response::builder()
-                            .status(200)
-                            .body(serde_json::to_string(&products).unwrap())
-                            .expect("failed to build response")
-                    }
-                    http::Method::POST => {
-                        if let Some(body) = req.into_body() {
-                            let product: Product = body.into();
-
-                            keyvalue::set("", &product.id.to_string(), &product).unwrap();
-
-                            Response::builder()
-                                .status(201)
-                                .body(serde_json::to_string(&product).unwrap())
-                                .expect("failed to build response")
-                        } else {
-                            Response::builder()
-                                .status(400)
-                                .body("Missing body".to_string())
-                                .expect("failed to build response")
-                        }
-                    }
-                    _ => Response::builder()
-                        .status(405)
-                        .body("Method not allowed".to_string())
-                        .expect("failed to build response"),
-                },
-                _ => Response::builder()
-                    .status(404)
-                    .body("Not found".to_string())
-                    .expect("failed to build response"),
+    fn list_products() -> Result<Vec<Product>, Error> {
+        Ok(vec![
+            Product {
+                id: "abc123".to_string(),
+                name: "Pound of cocaine".to_string(),
+                description: "Want a heart attack? It's a bargain too".to_string(),
+                price: 20, // 20p is a bargain
+                sku_code: "cocaine_bap".to_string(),
             },
-            Err(adapters::http::Error::Serde(e)) => Response::builder()
-                .status(400)
-                .body(format!("Invalid JSON: {}", e))
-                .expect("failed to build response"),
-            Err(e) => {
-                eprintln!("Error: {:?}", e);
-                Response::builder()
-                    .status(500)
-                    .body("Internal server error".to_string())
-                    .expect("failed to build response")
-            }
-        };
-
-        wasi::http::types::ResponseOutparam::set(response_out, Ok(response.into()));
+            Product {
+                id: "abc567".to_string(),
+                name: "Teddy bear".to_string(),
+                description: "When you need a hug the next day".to_string(),
+                price: 1200, // £12.00
+                sku_code: "teddy".to_string(),
+            },
+        ])
     }
 }

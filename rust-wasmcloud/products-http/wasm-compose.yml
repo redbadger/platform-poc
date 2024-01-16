@@ -1,0 +1,9 @@
+search-paths:
+  - ../products/target/wasm32-wasi/release/
+
+instantiations:
+  root:
+    arguments:
+      platform-poc:products/products@0.1.0:
+        instance: products
+        export: platform-poc:products/products@0.1.0
