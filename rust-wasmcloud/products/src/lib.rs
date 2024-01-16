@@ -23,14 +23,14 @@ impl Guest for Component {
     fn list_products() -> Result<Vec<Product>, Error> {
         Ok(vec![
             Product {
-                id: "abc123".to_string(),
+                id: "9d0b941c-6f52-432a-a736-d654db09a624".to_string(),
                 name: "Pound of cocaine".to_string(),
                 description: "Want a heart attack? It's a bargain too".to_string(),
                 price: 20, // 20p is a bargain
                 sku_code: "cocaine_bap".to_string(),
             },
             Product {
-                id: "abc567".to_string(),
+                id: "829d96f5-131a-4f78-99f1-6b59c28af945".to_string(),
                 name: "Teddy bear".to_string(),
                 description: "When you need a hug the next day".to_string(),
                 price: 1200, // £12.00

@@ -10,10 +10,20 @@ crate-type = ["cdylib"]
 
 [package.metadata.component]
 package = "platform-poc:products-http"
-target = { path = "wit/world.wit", world = "products-http-service" }
 
-[package.metadata.component.dependencies]
+[package.metadata.component.target]
+path = "wit/world.wit"
+world = "products-http-service"
+
+[package.metadata.component.target.dependencies]
 "platform-poc:products" = { path = "../products/target/wasm32-wasi/release/products.wasm" }
+"wasi:cli" = { path = "wit/deps/cli" }
+"wasi:clocks" = { path = "wit/deps/clocks" }
+"wasi:filesystem" = { path = "wit/deps/filesystem" }
+"wasi:http" = { path = "wit/deps/http" }
+"wasi:io" = { path = "wit/deps/io" }
+"wasi:random" = { path = "wit/deps/random" }
+"wasi:sockets" = { path = "wit/deps/sockets" }
 
 [dependencies]
 anyhow = "1.0.79"

@@ -3,10 +3,8 @@ kind: Application
 metadata:
   name: rust-http-hello-world
   annotations:
-    version: v0.0.1
-    description:
-      "HTTP hello world demo in Rust, using the WebAssembly Component Model and
-      WebAssembly Interfaces Types (WIT)"
+    version: v0.0.3
+    description: "HTTP hello world demo in Rust, using the WebAssembly Component Model and WebAssembly Interfaces Types (WIT)"
     experimental: true
 spec:
   components:
@@ -14,7 +12,7 @@ spec:
       type: actor
       properties:
         # Try using `wash build -o json` and use the `actor_path` field, prepended with `file://`
-        image: file:///Users/stuartharris/src/redbadger/platform-poc/rust-wasmcloud/products/build/http_hello_world_s.wasm
+        image: file:///Users/viktor/Projects/platform-poc/platform-poc/rust-wasmcloud/products-http/build/products_http_s.wasm
       traits:
         - type: spreadscaler
           properties:
@@ -24,11 +22,11 @@ spec:
             target: httpserver
             values:
               ADDRESS: 127.0.0.1:8081
-        - type: linkdef
-          properties:
-            target: keyvalue
-            values:
-              address: redis://127.0.0.1:6379
+        # - type: linkdef
+        #   properties:
+        #     target: keyvalue
+        #     values:
+        #       address: redis://127.0.0.1:6379
 
     - name: httpserver
       type: capability
@@ -36,8 +34,8 @@ spec:
         image: wasmcloud.azurecr.io/httpserver:0.19.1
         contract: wasmcloud:httpserver
 
-    - name: keyvalue
-      type: capability
-      properties:
-        image: wasmcloud.azurecr.io/kvredis:0.22.0
-        contract: wasmcloud:keyvalue
+    # - name: keyvalue
+    #   type: capability
+    #   properties:
+    #     image: wasmcloud.azurecr.io/kvredis:0.22.0
+    #     contract: wasmcloud:keyvalue
