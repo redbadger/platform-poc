@@ -16,7 +16,7 @@ impl Guest for Component {
         Ok(())
     }
 
-    fn create_product(product: Product) -> Result<(), Error> {
+    fn create_product(_product: Product) -> Result<(), Error> {
         Ok(())
     }
 
