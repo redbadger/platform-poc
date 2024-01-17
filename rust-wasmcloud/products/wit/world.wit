@@ -10,7 +10,8 @@ interface types {
     }
 
     variant error {
-        store-error(string)
+        internal(string),
+        store-error(string),
     }
 }
 
@@ -29,8 +30,7 @@ interface products {
 }
 
 world product-service {
-    // TODO import wasi:keyvalue/readwrite
-    // TODO import wasi:keyvalue/batch
+    import platform-poc:keyvalue/keyvalue@0.1.0;
 
     export products;
 }

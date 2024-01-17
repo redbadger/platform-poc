@@ -83,6 +83,9 @@ dependencies = [
 name = "products"
 version = "0.1.0"
 dependencies = [
+ "serde",
+ "serde_json",
+ "uuid",
  "wit-bindgen",
 ]
 
@@ -181,6 +184,15 @@ name = "unicode-xid"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f962df74c8c05a667b5ee8bcf162993134c104e96440b663c8daa176dc772d8c"
+
+[[package]]
+name = "uuid"
+version = "1.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5e395fcf16a7a3d8127ec99782007af141946b4795001f876d54fb0d55978560"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "wasm-encoder"
