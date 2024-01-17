@@ -1,0 +1,2 @@
+keyvalue = "https://github.com/WebAssembly/wasi-keyvalue/archive/main.tar.gz"
+io = "https://github.com/WebAssembly/wasi-io/archive/v0.2.0-rc-2023-11-10.tar.gz"

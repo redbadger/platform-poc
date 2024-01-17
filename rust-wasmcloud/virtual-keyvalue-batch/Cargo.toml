@@ -1,0 +1,23 @@
+[package]
+name = "virtual-keyvalue-batch"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+
+[lib]
+crate-type = ["cdylib"]
+
+[package.metadata.component]
+package = "platform-poc:virtual-keyvalue-batch"
+
+[package.metadata.component.target]
+path = "wit/world.wit"
+world = "virtual-keyvalue-batch"
+
+[package.metadata.component.target.dependencies]
+"wasi:keyvalue" = { path = "wit/deps/keyvalue" }
+"wasi:io" = { path = "wit/deps/io" }
+
+[dependencies]
+wit-bindgen = { version = "0.16", features = ["default"] }
