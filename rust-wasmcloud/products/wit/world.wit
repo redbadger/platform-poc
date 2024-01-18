@@ -1,4 +1,4 @@
-package platform-poc:product-service;
+package platform-poc:product-service@0.1.0;
 
 world product-service {
     import platform-poc:keyvalue/keyvalue@0.1.0;

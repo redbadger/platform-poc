@@ -16,7 +16,7 @@ path = "wit/world.wit"
 world = "platform-wasmcloud"
 
 [package.metadata.component.target.dependencies]
-"platform-poc:keyvalue" = { path = "wit/deps/platform-poc" }
+"platform-poc:keyvalue" = { path = "wit/deps/platform" }
 
 [dependencies]
 wit-bindgen = { version = "0.16", features = ["default"] }
