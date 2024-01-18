@@ -1,5 +1,5 @@
 [package]
-name = "virtual-keyvalue-batch"
+name = "platform-wasmcloud"
 version = "0.1.0"
 edition = "2021"
 
@@ -9,15 +9,14 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [package.metadata.component]
-package = "platform-poc:virtual-keyvalue-batch"
+package = "platform-poc:platform-wasmcloud"
 
 [package.metadata.component.target]
 path = "wit/world.wit"
-world = "virtual-keyvalue-batch"
+world = "platform-wasmcloud"
 
 [package.metadata.component.target.dependencies]
-"wasi:keyvalue" = { path = "wit/deps/keyvalue" }
-"wasi:io" = { path = "wit/deps/io" }
+"platform-poc:keyvalue" = { path = "wit/deps/platform-poc" }
 
 [dependencies]
 wit-bindgen = { version = "0.16", features = ["default"] }

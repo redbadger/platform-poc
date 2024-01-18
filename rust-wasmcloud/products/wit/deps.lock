@@ -1,4 +1,9 @@
-[platform-poc]
-path = "../../wit/"
+[platform]
+path = "../../wit/platform"
 sha256 = "9c2b2d3a85ea72479fb5fc95871ea8695dae2cb53c4f4a672604cf7e9a18cf52"
 sha512 = "f30b08b24261e715c1bf743e5bba5807143e9f85e5265d9a65376578968bda5af1abd7addd0ae83ed7f00a0e0e753a00929f0181b1e93ac1c528a77d5d670e0a"
+
+[products]
+path = "../../wit/products"
+sha256 = "5b1d31ac2ca3a60b4cfb4776492c33a36687c180a7b8b01f6a7f0cbc31ac0d81"
+sha512 = "779f1f0e5f834aadc87b5718dda66bd598eb53536cf72f76ea5fea0df87348622176fb7731819976b3911b0c80fd4661b3d575f1a3f357a35622a43d184804ee"

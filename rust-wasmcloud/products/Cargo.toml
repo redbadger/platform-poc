@@ -22,4 +22,5 @@ path = "wit/world.wit"
 world = "product-service"
 
 [package.metadata.component.target.dependencies]
-"platform-poc:keyvalue" = { path = "../wit/"}
+"platform-poc:keyvalue" = { path = "wit/deps/platform"}
+"platform-poc:products" = { path = "wit/deps/products"}

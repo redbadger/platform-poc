@@ -1,0 +1,5 @@
+package platform-poc:platform-wasmcloud@0.1.0;
+
+world platform-wasmcloud {
+    export platform-poc:keyvalue/keyvalue@0.1.0;
+}

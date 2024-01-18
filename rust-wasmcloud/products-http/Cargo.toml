@@ -16,7 +16,7 @@ path = "wit/world.wit"
 world = "products-http-service"
 
 [package.metadata.component.target.dependencies]
-"platform-poc:products" = { path = "../products/wit" }
+"platform-poc:products" = { path = "wit/deps/products" }
 "wasi:cli" = { path = "wit/deps/cli" }
 "wasi:clocks" = { path = "wit/deps/clocks" }
 "wasi:filesystem" = { path = "wit/deps/filesystem" }
