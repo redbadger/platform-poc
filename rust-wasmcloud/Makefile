@@ -8,12 +8,13 @@ DEPS_TOML = $(shell find . -name 'deps.toml')
 wit-deps: wit/sentinel
 
 wit/sentinel: $(WIT_FILES) $(DEPS_TOML)
-	for svc in products products-http platform-wasmcloud; do \
+	for svc in products products-http inventory platform-wasmcloud; do \
 		(cd $$svc && wit-deps) \
 	done
 	echo "keep track of wit changes for make" > wit/sentinel
 
 products: products/target/wasm32-wasi/release/products.wasm
+inventory: inventory/target/wasm32-wasi/release/inventory.wasm
 platform-wasmcloud: platform-wasmcloud/target/wasm32-wasi/release/platform_wasmcloud.wasm
 
 products-http: products-http/build/products_http_s.wasm
@@ -42,6 +43,13 @@ wit/sentinel \
 products/Cargo.toml \
 $(PRODUCTS_SOURCES)
 	cd products && cargo component build --release
+
+INVENTORY_SOURCES = $(shell find inventory -name '*.wit' -o -name '*.rs')
+inventory/target/wasm32-wasi/release/inventory.wasm: \
+wit/sentinel \
+inventory/Cargo.toml \
+$(INVENTORY_SOURCES)
+	cd inventory && cargo component build --release
 
 PLATFORM_WC_SOURCES = $(shell find platform-wasmcloud -name '*.wit' -o -name '*.rs')
 platform-wasmcloud/target/wasm32-wasi/release/platform_wasmcloud.wasm: \

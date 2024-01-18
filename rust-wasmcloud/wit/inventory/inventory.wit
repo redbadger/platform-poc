@@ -1,0 +1,14 @@
+package platform-poc:inventory@0.1.0;
+
+interface types {
+    variant error {
+        internal(string),
+    }
+}
+
+/// Inventory service interface provides access to the product catalog
+interface inventory {
+    use types.{error};
+
+    hello: func() -> string;
+}

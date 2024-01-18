@@ -1,0 +1,5 @@
+package platform-poc:inventory-service@0.1.0;
+
+world inventory-service {
+    export platform-poc:inventory/inventory@0.1.0;
+}
