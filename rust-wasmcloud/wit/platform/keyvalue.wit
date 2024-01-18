@@ -2,7 +2,10 @@ package platform-poc:keyvalue@0.1.0;
 
 interface types {
     resource bucket {
-        open: static func(name: string) -> result<bucket, error>;
+        constructor(name: string, wasi-kv-handle: u32);
+
+        name: func() -> string;
+        wasi-kv-handle: func() -> u32;
     }
 
     type key = string;
@@ -16,6 +19,9 @@ interface types {
 
 interface keyvalue {
     use types.{bucket, error, key, key-value, value };
+
+    /// Opens a bucket, returning the resource
+    open-bucket: func(name: string) -> result<bucket, error>;
 
     /// Gets all known keys
     get-all: func(bucket: bucket) -> result<list<key-value>, error>;

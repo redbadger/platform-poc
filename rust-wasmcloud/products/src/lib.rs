@@ -9,7 +9,7 @@ wit_bindgen::generate!({
 use exports::platform_poc::products::products::Guest as ProductsInterface;
 
 use platform_poc::keyvalue::{
-    keyvalue::{self as kv, get_all},
+    keyvalue::{self as kv},
     types as kv_types,
 };
 use platform_poc::products::types;
@@ -22,7 +22,7 @@ struct ProductsService;
 
 impl ProductsService {
     fn store_product(product: Product) -> Result<(), types::Error> {
-        let bucket = kv_types::Bucket::open(COLLECTION)?;
+        let bucket = kv::open_bucket(COLLECTION)?;
         let key = product.id.to_string();
 
         let bytes = serde_json::to_vec(&product)?;
@@ -65,10 +65,10 @@ impl ProductsInterface for ProductsService {
     }
 
     fn list_products() -> Result<Vec<types::Product>, types::Error> {
-        let bucket = kv_types::Bucket::open(COLLECTION)?;
+        let bucket = kv::open_bucket(COLLECTION)?;
 
         // incoming bytes -> local Product -> outgoing Product
-        get_all(bucket)
+        kv::get_all(bucket)
             .map_err(|e| e.into())
             .and_then(|kv_pairs| {
                 kv_pairs

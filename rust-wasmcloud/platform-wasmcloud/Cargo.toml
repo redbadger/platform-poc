@@ -8,6 +8,11 @@ edition = "2021"
 [lib]
 crate-type = ["cdylib"]
 
+[dependencies]
+serde = { version = "1.0.193", features = ["derive"] }
+serde_json = "1.0.108"
+wit-bindgen = { version = "0.16", features = ["default"] }
+
 [package.metadata.component]
 package = "platform-poc:platform-wasmcloud"
 
@@ -19,6 +24,3 @@ world = "platform-wasmcloud"
 "platform-poc:keyvalue" = { path = "wit/deps/platform" }
 "wasi:keyvalue" = { path = "wit/deps/keyvalue" }
 "wasi:io" = { path = "wit/deps/io" }
-
-[dependencies]
-wit-bindgen = { version = "0.16", features = ["default"] }
