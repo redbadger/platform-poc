@@ -8,7 +8,10 @@ wit_bindgen::generate!({
 
 use exports::platform_poc::products::products::Guest as ProductsInterface;
 
-use platform_poc::keyvalue::{keyvalue as kv, types as kv_types};
+use platform_poc::keyvalue::{
+    keyvalue::{self as kv, get_all},
+    types as kv_types,
+};
 use platform_poc::products::types;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -62,7 +65,24 @@ impl ProductsInterface for ProductsService {
     }
 
     fn list_products() -> Result<Vec<types::Product>, types::Error> {
-        Ok(vec![])
+        let bucket = kv_types::Bucket::open(COLLECTION)?;
+
+        // incoming bytes -> local Product -> outgoing Product
+        get_all(bucket)
+            .map_err(|e| e.into())
+            .and_then(|kv_pairs| {
+                kv_pairs
+                    .into_iter()
+                    .map(|(_, bytes)| serde_json::from_slice::<Product>(&bytes))
+                    .collect::<Result<Vec<_>, _>>()
+                    .map_err(|e| e.into())
+            })
+            .map(|products| {
+                products
+                    .into_iter()
+                    .map(|product| product.into())
+                    .collect::<Vec<types::Product>>()
+            })
     }
 }
 
@@ -88,6 +108,18 @@ impl TryFrom<types::Product> for Product {
             price: value.price as isize,
             sku_code: value.sku_code,
         })
+    }
+}
+
+impl From<Product> for types::Product {
+    fn from(value: Product) -> Self {
+        Self {
+            id: value.id.to_string(),
+            name: value.name,
+            description: value.description,
+            price: value.price as i32,
+            sku_code: value.sku_code,
+        }
     }
 }
 
