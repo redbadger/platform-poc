@@ -7,6 +7,7 @@ wit_bindgen::generate!({
 
 use exports::platform_poc::keyvalue::keyvalue::Guest as KeyValueExport;
 use exports::platform_poc::keyvalue::keyvalue::{Bucket, Error, Key, KeyValue, Value};
+use wasi::keyvalue;
 
 struct KeyValueAdapter;
 
