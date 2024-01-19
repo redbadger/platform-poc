@@ -17,20 +17,20 @@ products: products/target/wasm32-wasi/release/products.wasm
 inventory: inventory/target/wasm32-wasi/release/inventory.wasm
 platform-wasmcloud: platform-wasmcloud/target/wasm32-wasi/release/platform_wasmcloud.wasm
 
-products-http: products-http/build/products_http_s.wasm
+products-http: compose/build/products_wasmcloud_s.wasm
 
-products-http/build/products_http_s.wasm: products-http/build/products_http.wasm
-	cd products-http && wash build --sign-only
+compose/build/products_wasmcloud_s.wasm: compose/build/products_wasmcloud.wasm
+	cd compose && wash build --sign-only
 
 # COMPOSE
-products-http/build/products_http.wasm: \
+compose/build/products_wasmcloud.wasm: \
 products-http/target/wasm32-wasi/release/products_http.wasm \
 products/target/wasm32-wasi/release/products.wasm \
 platform-wasmcloud/target/wasm32-wasi/release/platform_wasmcloud.wasm \
-products-http/wasm-compose.yml
-	cd products-http \
+compose/products-wasmcloud.yml
+	cd compose \
 	&& mkdir -p build \
-	&& wasm-tools compose -c wasm-compose.yml -o build/products_http.wasm target/wasm32-wasi/release/products_http.wasm
+	&& wasm-tools compose -c products-wasmcloud.yml -o build/products_wasmcloud.wasm ../products-http/target/wasm32-wasi/release/products_http.wasm
 
 PRODUCTS_HTTP_SOURCES = $(shell find products-http -name '*.wit' -o -name '*.rs')
 products-http/target/wasm32-wasi/release/products_http.wasm: \

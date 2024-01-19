@@ -1,33 +1,12 @@
-# HTTP Hello World
+# HTTP Wrapper for Products
 
-This is a simple Rust Wasm example that responds with a "Hello World" message for each request.
+This component adapts the [product interface](../wit/products/products.wit) to `wasi:http`.
 
-## Prerequisites
-
-- `cargo` 1.74
-- `wash` 0.25.0
-- `wasmtime` 16.0.0 (if running with wasmtime)
-
-## Building
-
-```bash
-wash build
-```
-
-## Running with wasmtime
-
-You must have wasmtime 16.0.0 for this to work. Make sure to follow the build step above first.
-
-```bash
-wasmtime serve -Scommon ./build/http_hello_world_s.wasm
-```
-
-## Running with wasmCloud
-
-Make sure to follow the build steps above, and replace the file path in [the wadm manifest](./wadm.yaml) with the absolute path to your local built component.
+## Post a product
 
 ```
-wash up -d
-wash app deploy ./wadm.yaml
-curl http://localhost:8081
+curl --header "Content-Type: application/json" \
+  --request POST \
+  --data "{\"name\":\"Teddy bear\",\"description\":\"He's very fluffy\!\",\"price\":1200,\"skuCode\":\"teddy\"}" \
+  http://localhost:8081/api/product
 ```

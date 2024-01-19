@@ -1,4 +1,4 @@
-name = "products-http"
+name = "products_wasmcloud"
 language = "rust"
 type = "actor"
 version = "0.1.0"
