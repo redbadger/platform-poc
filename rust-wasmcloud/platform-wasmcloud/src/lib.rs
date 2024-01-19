@@ -7,7 +7,6 @@ wit_bindgen::generate!({
 
 use exports::platform_poc::keyvalue::keyvalue::Guest as KeyValueExport;
 use exports::platform_poc::keyvalue::keyvalue::{Bucket, Error, Key, KeyValue, Value};
-use serde::{Deserialize, Serialize};
 use wasi::keyvalue::{readwrite, types as wasi_kv};
 
 const ALL_KEYS: &str = "__keys";
@@ -18,13 +17,13 @@ impl KeyValueExport for KeyValueAdapter {
     fn get_all(bucket: Bucket) -> Result<Vec<KeyValue>, Error> {
         let all_keys = readwrite::get(bucket.wasi_kv_handle(), &ALL_KEYS.to_string()).unwrap();
         let bytes = wasi_kv::incoming_value_consume_sync(all_keys).unwrap();
-        let all_keys: KeyList = match serde_json::from_slice(bytes.as_slice()) {
+        let all_keys: Vec<Key> = match serde_json::from_slice(bytes.as_slice()) {
             Ok(keys) => keys,
-            Err(_) => KeyList(Vec::new()),
+            Err(_) => Vec::new(),
         };
 
         let mut all_values = Vec::new();
-        for key in all_keys.0.iter() {
+        for key in all_keys {
             let value = readwrite::get(bucket.wasi_kv_handle(), &key.to_string()).unwrap();
             let bytes = wasi_kv::incoming_value_consume_sync(value).unwrap();
             let value: Value = match serde_json::from_slice(bytes.as_slice()) {
@@ -40,12 +39,12 @@ impl KeyValueExport for KeyValueAdapter {
     fn set(bucket: Bucket, key: Key, value: Value) -> Result<(), Error> {
         let all_keys = readwrite::get(bucket.wasi_kv_handle(), &ALL_KEYS.to_string()).unwrap();
         let bytes = wasi_kv::incoming_value_consume_sync(all_keys).unwrap();
-        let mut all_keys: KeyList = match serde_json::from_slice(bytes.as_slice()) {
+        let mut all_keys: Vec<Key> = match serde_json::from_slice(bytes.as_slice()) {
             Ok(keys) => keys,
-            Err(_) => KeyList(Vec::new()),
+            Err(_) => Vec::new(),
         };
-        if !all_keys.0.contains(&key) {
-            all_keys.0.push(key.clone());
+        if !all_keys.contains(&key) {
+            all_keys.push(key.clone());
         }
 
         let outgoing_value = wasi_kv::new_outgoing_value();
@@ -73,6 +72,3 @@ impl KeyValueExport for KeyValueAdapter {
         Ok(Bucket::new(&name, bucket))
     }
 }
-
-#[derive(Serialize, Deserialize)]
-struct KeyList(Vec<Key>);
