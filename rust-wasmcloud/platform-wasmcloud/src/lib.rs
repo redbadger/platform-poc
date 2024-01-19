@@ -1,74 +1,84 @@
 wit_bindgen::generate!({
     world: "platform-wasmcloud",
     exports: {
-        "platform-poc:keyvalue/keyvalue": KeyValueAdapter,
+        "platform-poc:keyvalue/keyvalue/bucket": BucketResource,
     }
 });
 
-use exports::platform_poc::keyvalue::keyvalue::Guest as KeyValueExport;
-use exports::platform_poc::keyvalue::keyvalue::{Bucket, Error, Key, KeyValue, Value};
+use exports::platform_poc::keyvalue::keyvalue::GuestBucket;
+use exports::platform_poc::keyvalue::keyvalue::{Error, Key, KeyValue, Value};
 use wasi::keyvalue::{readwrite, types as wasi_kv};
+use wit_bindgen::Resource;
 
 const ALL_KEYS: &str = "__keys";
 
-struct KeyValueAdapter;
+pub struct BucketResource {
+    name: String,
+    wasi_handle: u32,
+}
 
-impl KeyValueExport for KeyValueAdapter {
-    fn get_all(bucket: Bucket) -> Result<Vec<KeyValue>, Error> {
-        let all_keys = readwrite::get(bucket.wasi_kv_handle(), &ALL_KEYS.to_string()).unwrap();
-        let bytes = wasi_kv::incoming_value_consume_sync(all_keys).unwrap();
-        let all_keys: Vec<Key> = match serde_json::from_slice(bytes.as_slice()) {
-            Ok(keys) => keys,
-            Err(_) => Vec::new(),
-        };
+impl GuestBucket for BucketResource {
+    #[doc = " Opens a bucket, returning the resource"]
+    fn open(name: String) -> Result<Resource<BucketResource>, Error> {
+        let bucket = wasi_kv::open_bucket(&name)?;
+
+        Ok(Resource::new(BucketResource {
+            name,
+            wasi_handle: bucket,
+        }))
+    }
+
+    fn name(&self) -> String {
+        self.name.clone()
+    }
+
+    fn get_all(&self) -> Result<Vec<KeyValue>, Error> {
+        let all_keys: Vec<Key> = readwrite::get(self.wasi_handle, &ALL_KEYS.to_string())
+            .and_then(wasi_kv::incoming_value_consume_sync)
+            .map(|bytes| serde_json::from_slice(&bytes).unwrap_or_else(|_e| vec![]))?;
 
         let mut all_values = Vec::new();
         for key in all_keys {
-            let value = readwrite::get(bucket.wasi_kv_handle(), &key.to_string()).unwrap();
-            let bytes = wasi_kv::incoming_value_consume_sync(value).unwrap();
-            let value: Value = match serde_json::from_slice(bytes.as_slice()) {
-                Ok(value) => value,
-                Err(_) => continue,
-            };
-            all_values.push((key.clone(), value));
+            let bytes = readwrite::get(self.wasi_handle, &key)
+                .and_then(wasi_kv::incoming_value_consume_sync)?;
+
+            all_values.push((key.clone(), bytes));
         }
 
         Ok(all_values)
     }
 
-    fn set(bucket: Bucket, key: Key, value: Value) -> Result<(), Error> {
-        let all_keys = readwrite::get(bucket.wasi_kv_handle(), &ALL_KEYS.to_string()).unwrap();
-        let bytes = wasi_kv::incoming_value_consume_sync(all_keys).unwrap();
-        let mut all_keys: Vec<Key> = match serde_json::from_slice(bytes.as_slice()) {
-            Ok(keys) => keys,
-            Err(_) => Vec::new(),
-        };
+    fn set(&self, key: Key, value: Value) -> Result<(), Error> {
+        let mut all_keys = readwrite::get(self.wasi_handle, &ALL_KEYS.to_string())
+            .and_then(wasi_kv::incoming_value_consume_sync)
+            .map(|bytes| serde_json::from_slice(&bytes).unwrap_or_else(|_e| vec![]))?;
+
         if !all_keys.contains(&key) {
             all_keys.push(key.clone());
         }
 
         let outgoing_value = wasi_kv::new_outgoing_value();
-        let bytes = serde_json::to_vec(&value).unwrap();
-        wasi_kv::outgoing_value_write_body_sync(outgoing_value, &bytes).unwrap();
-        readwrite::set(bucket.wasi_kv_handle(), &key.to_string(), outgoing_value).unwrap();
+        let bytes = serde_json::to_vec(&value)?;
+        wasi_kv::outgoing_value_write_body_sync(outgoing_value, &bytes)?;
+        readwrite::set(self.wasi_handle, &key.to_string(), outgoing_value)?;
 
         let outgoing_value = wasi_kv::new_outgoing_value();
-        let bytes = serde_json::to_vec(&all_keys).unwrap();
-        wasi_kv::outgoing_value_write_body_sync(outgoing_value, &bytes).unwrap();
-        readwrite::set(
-            bucket.wasi_kv_handle(),
-            &ALL_KEYS.to_string(),
-            outgoing_value,
-        )
-        .unwrap();
+        let bytes = serde_json::to_vec(&all_keys)?;
+        wasi_kv::outgoing_value_write_body_sync(outgoing_value, &bytes)?;
+        readwrite::set(self.wasi_handle, &ALL_KEYS.to_string(), outgoing_value)?;
 
         Ok(())
     }
+}
 
-    fn open_bucket(name: String) -> Result<Bucket, Error> {
-        // TODO improve error handling
-        // fails with 3u32 if bucket doesn't exist
-        let bucket = wasi_kv::open_bucket(&name).unwrap();
-        Ok(Bucket::new(&name, bucket))
+impl From<wasi_kv::Error> for Error {
+    fn from(value: wasi_kv::Error) -> Self {
+        Self::Internal(value.to_string())
+    }
+}
+
+impl From<serde_json::error::Error> for Error {
+    fn from(value: serde_json::error::Error) -> Self {
+        Self::Internal(value.to_string())
     }
 }

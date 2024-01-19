@@ -22,11 +22,11 @@ spec:
             target: httpserver
             values:
               ADDRESS: 127.0.0.1:8081
-        # - type: linkdef
-        #   properties:
-        #     target: keyvalue
-        #     values:
-        #       address: redis://127.0.0.1:6379
+        - type: linkdef
+          properties:
+            target: keyvalue
+            values:
+              address: redis://127.0.0.1:6379
 
     - name: httpserver
       type: capability
@@ -34,8 +34,8 @@ spec:
         image: wasmcloud.azurecr.io/httpserver:0.19.1
         contract: wasmcloud:httpserver
 
-    # - name: keyvalue
-    #   type: capability
-    #   properties:
-    #     image: wasmcloud.azurecr.io/kvredis:0.22.0
-    #     contract: wasmcloud:keyvalue
+    - name: keyvalue
+      type: capability
+      properties:
+        image: wasmcloud.azurecr.io/kvredis:0.22.0
+        contract: wasmcloud:keyvalue

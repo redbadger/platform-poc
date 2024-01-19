@@ -8,10 +8,7 @@ wit_bindgen::generate!({
 
 use exports::platform_poc::products::products::Guest as ProductsInterface;
 
-use platform_poc::keyvalue::{
-    keyvalue::{self as kv},
-    types as kv_types,
-};
+use platform_poc::keyvalue::keyvalue::{self as kv, Bucket};
 use platform_poc::products::types;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -22,11 +19,11 @@ struct ProductsService;
 
 impl ProductsService {
     fn store_product(product: Product) -> Result<(), types::Error> {
-        let bucket = kv::open_bucket(COLLECTION)?;
+        let bucket = Bucket::open(COLLECTION)?;
         let key = product.id.to_string();
 
         let bytes = serde_json::to_vec(&product)?;
-        kv::set(bucket, &key, &bytes)?;
+        bucket.set(&key, &bytes)?;
 
         Ok(())
     }
@@ -65,10 +62,11 @@ impl ProductsInterface for ProductsService {
     }
 
     fn list_products() -> Result<Vec<types::Product>, types::Error> {
-        let bucket = kv::open_bucket(COLLECTION)?;
+        let bucket = Bucket::open(COLLECTION)?;
 
         // incoming bytes -> local Product -> outgoing Product
-        kv::get_all(bucket)
+        bucket
+            .get_all()
             .map_err(|e| e.into())
             .and_then(|kv_pairs| {
                 kv_pairs
@@ -123,8 +121,8 @@ impl From<Product> for types::Product {
     }
 }
 
-impl From<kv_types::Error> for types::Error {
-    fn from(value: kv_types::Error) -> Self {
+impl From<kv::Error> for types::Error {
+    fn from(value: kv::Error) -> Self {
         types::Error::StoreError(value.to_string())
     }
 }
