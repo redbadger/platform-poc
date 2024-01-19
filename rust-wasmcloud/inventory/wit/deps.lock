@@ -1,7 +1,7 @@
 [inventory]
 path = "../../wit/inventory"
-sha256 = "5034aa6dd82d5033867b4ebaeb844cccf86cb0bb4e2b2ae22db1eebf752407ae"
-sha512 = "0921758e150c6f4ee6fc1c723c33d26218e3e2cbde512c9800fcb2ebddb01c9f39937bc9b06fa044dc0a0ce96a8e412f35cf38a6dc0f0d7f2b809dfbddef0165"
+sha256 = "ca64fa7b0888146863adb6de08441646ea6fedec65d213cb06e4a8c5340ae238"
+sha512 = "2d770b1a5257a5e5b8cd1399b2b2bdac7f683bd3383a7c294c82c54533f95a0b0517a4017349d7221faff3ad82013cb4b29830a97b1f4c3b3b9b93d261e80fd2"
 
 [platform]
 path = "../../wit/platform"
