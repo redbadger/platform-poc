@@ -25,7 +25,9 @@ products-http/build/products_http_s.wasm: products-http/build/products_http.wasm
 # COMPOSE
 products-http/build/products_http.wasm: \
 products-http/target/wasm32-wasi/release/products_http.wasm \
-products/target/wasm32-wasi/release/products.wasm products-http/wasm-compose.yml
+products/target/wasm32-wasi/release/products.wasm \
+platform-wasmcloud/target/wasm32-wasi/release/platform_wasmcloud.wasm \
+products-http/wasm-compose.yml
 	cd products-http \
 	&& mkdir -p build \
 	&& wasm-tools compose -c wasm-compose.yml -o build/products_http.wasm target/wasm32-wasi/release/products_http.wasm
