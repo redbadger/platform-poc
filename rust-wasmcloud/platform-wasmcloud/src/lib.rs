@@ -7,7 +7,8 @@ wit_bindgen::generate!({
 
 use exports::platform_poc::keyvalue::keyvalue::Guest as KeyValueExport;
 use exports::platform_poc::keyvalue::keyvalue::{Bucket, Error, Key, KeyValue, Value};
-use wasi::keyvalue;
+use wasi::keyvalue::readwrite;
+use wasi::keyvalue::types as wasi_types;
 
 struct KeyValueAdapter;
 
@@ -19,6 +20,19 @@ impl KeyValueExport for KeyValueAdapter {
     }
 
     fn set(bucket: Bucket, key: Key, value: Value) -> Result<(), Error> {
-        todo!()
+        let outgoing_value = wasi_types::new_outgoing_value();
+        wasi_types::outgoing_value_write_body_sync(outgoing_value, &value)?;
+
+        let bucket = wasi_types::open_bucket("TEST")?; // FIXME
+
+        readwrite::set(bucket, &key, outgoing_value)?;
+
+        Ok(())
+    }
+}
+
+impl From<wasi_types::Error> for Error {
+    fn from(value: wasi_types::Error) -> Self {
+        Error::Internal(value.to_string())
     }
 }
