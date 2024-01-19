@@ -3,7 +3,7 @@ kind: Application
 metadata:
   name: products-http
   annotations:
-    version: v0.0.1
+    version: v0.0.5
     description: "Product service REST API"
     experimental: true
 spec:
