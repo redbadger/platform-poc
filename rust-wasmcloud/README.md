@@ -74,7 +74,7 @@ Opening the API now should show the product in the list.
 
 ## How it works
 
-TO DO picture
+![arhitecture diagram](./architecture.webp)
 
 ### Business logic components
 

@@ -1,2 +1,2 @@
 keyvalue = "https://github.com/WebAssembly/wasi-keyvalue/archive/3b7e098a43534204187b7e734738338cf8c0ecf7.tar.gz"
-"platform" = "../../wit/platform"
+platform = "../../wit/platform"
