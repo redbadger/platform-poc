@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::platform_poc::products::products::Product as UpstreamProduct;
+use crate::platform_poc::products::products as product_service;
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -14,10 +14,10 @@ pub struct Product {
     pub sku_code: String,
 }
 
-impl TryFrom<UpstreamProduct> for Product {
+impl TryFrom<product_service::Product> for Product {
     type Error = anyhow::Error;
 
-    fn try_from(value: UpstreamProduct) -> Result<Self, Self::Error> {
+    fn try_from(value: product_service::Product) -> Result<Self, Self::Error> {
         Ok(Self {
             id: Uuid::parse_str(&value.id)?,
             name: value.name,
@@ -28,7 +28,7 @@ impl TryFrom<UpstreamProduct> for Product {
     }
 }
 
-impl From<Product> for UpstreamProduct {
+impl From<Product> for product_service::Product {
     fn from(value: Product) -> Self {
         Self {
             id: value.id.to_string(),

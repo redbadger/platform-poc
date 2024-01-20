@@ -9,26 +9,26 @@ wit_bindgen::generate!({
     },
 });
 
-use api::types::ProductRequest;
-use exports::wasi::http::incoming_handler::Guest;
 use http::{Request, Response};
+
+use exports::wasi::http::incoming_handler;
+use platform_poc::products::products as product_service;
+use wasi::http::types as wasi_http;
+
+use api::types::ProductRequest;
 use model::Product;
-use platform_poc::products::products;
 
 struct HttpServer;
 
-impl Guest for HttpServer {
-    fn handle(
-        request: wasi::http::types::IncomingRequest,
-        response_out: wasi::http::types::ResponseOutparam,
-    ) {
+impl incoming_handler::Guest for HttpServer {
+    fn handle(request: wasi_http::IncomingRequest, response_out: wasi_http::ResponseOutparam) {
         let request = Request::<Option<ProductRequest>>::try_from(request);
 
         let response: Response<String> = match request {
             Ok(req) => match req.uri().path() {
                 "/api/product" => match req.method().to_owned() {
                     http::Method::GET => {
-                        let response = products::list_products()
+                        let response = product_service::list_products()
                             .map_err(|e| anyhow::anyhow!(e))
                             .and_then(|r| {
                                 let products: Result<Vec<Product>, _> =
@@ -51,9 +51,9 @@ impl Guest for HttpServer {
                     http::Method::POST => {
                         if let Some(body) = req.into_body() {
                             let product: Product = body.into();
-                            let product: products::Product = product.into();
+                            let product: product_service::Product = product.into();
 
-                            match products::create_product(&product) {
+                            match product_service::create_product(&product) {
                                 Ok(()) => Response::builder()
                                     .status(201)
                                     .body(String::new())
@@ -93,6 +93,6 @@ impl Guest for HttpServer {
             }
         };
 
-        wasi::http::types::ResponseOutparam::set(response_out, Ok(response.into()));
+        wasi_http::ResponseOutparam::set(response_out, Ok(response.into()));
     }
 }

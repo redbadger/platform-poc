@@ -2,23 +2,22 @@
 wit_bindgen::generate!({
     world: "product-service",
     exports: {
-        "platform-poc:products/products": ProductsService,
+        "platform-poc:products/products": ProductService,
     }
 });
 
-use exports::platform_poc::products::products::{
-    Error as ProductsError, Guest as ProductsInterface, Product as ExportedProduct,
-};
-use platform_poc::keyvalue::keyvalue::{self as kv, Bucket};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+use exports::platform_poc::products::products as product_service;
+use platform_poc::keyvalue::keyvalue::{self as kv, Bucket};
+
 const COLLECTION: &str = "products";
 
-struct ProductsService;
+struct ProductService;
 
-impl ProductsService {
-    fn store_product(product: Product) -> Result<(), ProductsError> {
+impl ProductService {
+    fn store_product(product: Product) -> Result<(), product_service::Error> {
         let bucket = Bucket::open(COLLECTION)?;
         let key = product.id.to_string();
 
@@ -29,8 +28,8 @@ impl ProductsService {
     }
 }
 
-impl ProductsInterface for ProductsService {
-    fn start() -> Result<(), ProductsError> {
+impl product_service::Guest for ProductService {
+    fn start() -> Result<(), product_service::Error> {
         let products = vec![
             Product {
                 id: Uuid::parse_str("9d0b941c-6f52-432a-a736-d654db09a624")?,
@@ -55,13 +54,13 @@ impl ProductsInterface for ProductsService {
         Ok(())
     }
 
-    fn create_product(product: ExportedProduct) -> Result<(), ProductsError> {
+    fn create_product(product: product_service::Product) -> Result<(), product_service::Error> {
         Self::store_product(product.try_into()?)?;
 
         Ok(())
     }
 
-    fn list_products() -> Result<Vec<ExportedProduct>, ProductsError> {
+    fn list_products() -> Result<Vec<product_service::Product>, product_service::Error> {
         let bucket = Bucket::open(COLLECTION)?;
 
         // incoming bytes -> local Product -> outgoing Product
@@ -90,10 +89,10 @@ pub struct Product {
     pub sku_code: String,
 }
 
-impl TryFrom<ExportedProduct> for Product {
+impl TryFrom<product_service::Product> for Product {
     type Error = uuid::Error;
 
-    fn try_from(value: ExportedProduct) -> Result<Self, Self::Error> {
+    fn try_from(value: product_service::Product) -> Result<Self, Self::Error> {
         Ok(Self {
             id: Uuid::parse_str(&value.id)?,
             name: value.name,
@@ -104,7 +103,7 @@ impl TryFrom<ExportedProduct> for Product {
     }
 }
 
-impl From<Product> for ExportedProduct {
+impl From<Product> for product_service::Product {
     fn from(value: Product) -> Self {
         Self {
             id: value.id.to_string(),
@@ -116,20 +115,20 @@ impl From<Product> for ExportedProduct {
     }
 }
 
-impl From<kv::Error> for ProductsError {
+impl From<kv::Error> for product_service::Error {
     fn from(value: kv::Error) -> Self {
-        ProductsError::StoreError(format!("Keyvalue store error: {}", value))
+        product_service::Error::StoreError(format!("Keyvalue store error: {}", value))
     }
 }
 
-impl From<uuid::Error> for ProductsError {
+impl From<uuid::Error> for product_service::Error {
     fn from(value: uuid::Error) -> Self {
-        ProductsError::Internal(format!("Error parsing uuid: {}", value))
+        product_service::Error::Internal(format!("Error parsing uuid: {}", value))
     }
 }
 
-impl From<serde_json::Error> for ProductsError {
+impl From<serde_json::Error> for product_service::Error {
     fn from(value: serde_json::Error) -> Self {
-        ProductsError::Internal(format!("Error parsing JSON: {}", value))
+        product_service::Error::Internal(format!("Error parsing JSON: {}", value))
     }
 }

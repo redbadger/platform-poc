@@ -1,9 +1,7 @@
-use crate::wasi::{
-    http::types::{Fields, IncomingRequest, Method, OutgoingBody, OutgoingResponse},
-    io::streams::StreamError,
-};
 use serde::de::DeserializeOwned;
 use thiserror::Error;
+
+use crate::wasi::{http::types as wasi_http, io::streams::StreamError};
 
 #[derive(Error, Debug)]
 pub enum Error {
@@ -13,10 +11,10 @@ pub enum Error {
     Http(#[from] http::Error),
 }
 
-impl<T: DeserializeOwned> TryFrom<IncomingRequest> for http::Request<Option<T>> {
+impl<T: DeserializeOwned> TryFrom<wasi_http::IncomingRequest> for http::Request<Option<T>> {
     type Error = Error;
 
-    fn try_from(value: IncomingRequest) -> Result<Self, Self::Error> {
+    fn try_from(value: wasi_http::IncomingRequest) -> Result<Self, Self::Error> {
         let method: http::Method = value.method().into();
         let path_with_query = &value.path_with_query().unwrap();
         let uri = path_with_query.as_str();
@@ -56,26 +54,26 @@ impl<T: DeserializeOwned> TryFrom<IncomingRequest> for http::Request<Option<T>> 
     }
 }
 
-impl From<Method> for http::Method {
-    fn from(value: Method) -> Self {
+impl From<wasi_http::Method> for http::Method {
+    fn from(value: wasi_http::Method) -> Self {
         match value {
-            Method::Get => http::Method::GET,
-            Method::Post => http::Method::POST,
-            Method::Put => http::Method::PUT,
-            Method::Delete => http::Method::DELETE,
-            Method::Head => http::Method::HEAD,
-            Method::Patch => http::Method::PATCH,
-            Method::Options => http::Method::OPTIONS,
-            Method::Connect => http::Method::CONNECT,
-            Method::Trace => http::Method::TRACE,
-            Method::Other(value) => http::Method::from_bytes(value.as_bytes()).unwrap(),
+            wasi_http::Method::Get => http::Method::GET,
+            wasi_http::Method::Post => http::Method::POST,
+            wasi_http::Method::Put => http::Method::PUT,
+            wasi_http::Method::Delete => http::Method::DELETE,
+            wasi_http::Method::Head => http::Method::HEAD,
+            wasi_http::Method::Patch => http::Method::PATCH,
+            wasi_http::Method::Options => http::Method::OPTIONS,
+            wasi_http::Method::Connect => http::Method::CONNECT,
+            wasi_http::Method::Trace => http::Method::TRACE,
+            wasi_http::Method::Other(value) => http::Method::from_bytes(value.as_bytes()).unwrap(),
         }
     }
 }
 
-impl From<http::Response<String>> for OutgoingResponse {
+impl From<http::Response<String>> for wasi_http::OutgoingResponse {
     fn from(value: http::Response<String>) -> Self {
-        let response = OutgoingResponse::new(Fields::new());
+        let response = wasi_http::OutgoingResponse::new(wasi_http::Fields::new());
         let response_body = response.body().unwrap();
 
         response_body
@@ -86,7 +84,8 @@ impl From<http::Response<String>> for OutgoingResponse {
 
         response.set_status_code(value.status().as_u16()).unwrap();
 
-        OutgoingBody::finish(response_body, None).expect("failed to finish response body");
+        wasi_http::OutgoingBody::finish(response_body, None)
+            .expect("failed to finish response body");
         response
     }
 }

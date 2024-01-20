@@ -5,11 +5,10 @@ wit_bindgen::generate!({
     }
 });
 
-use exports::platform_poc::keyvalue::keyvalue::GuestBucket;
-use exports::platform_poc::keyvalue::keyvalue::{Error, Key, KeyValue, Value};
-use wasi::keyvalue::wasi_cloud_error::trace;
-use wasi::keyvalue::{readwrite, types as wasi_kv};
 use wit_bindgen::Resource;
+
+use exports::platform_poc::keyvalue::keyvalue as platform_kv;
+use wasi::keyvalue::{readwrite, types as wasi_kv, wasi_cloud_error::trace};
 
 const KEYS_KEY: &str = "__keys";
 
@@ -19,13 +18,13 @@ pub struct BucketResource {
 }
 
 impl BucketResource {
-    fn format_key(&self, key: &str) -> Key {
+    fn format_key(&self, key: &str) -> platform_kv::Key {
         format!("{}:{}", self.bucket_name, key)
     }
 }
 
-impl GuestBucket for BucketResource {
-    fn open(name: String) -> Result<Resource<BucketResource>, Error> {
+impl platform_kv::GuestBucket for BucketResource {
+    fn open(name: String) -> Result<Resource<BucketResource>, platform_kv::Error> {
         let bucket = wasi_kv::open_bucket("")?; // Buckets are not yet supported in wasmcloud
 
         Ok(Resource::new(BucketResource {
@@ -38,11 +37,12 @@ impl GuestBucket for BucketResource {
         self.bucket_name.clone()
     }
 
-    fn get_all(&self) -> Result<Vec<KeyValue>, Error> {
-        let all_keys: Vec<Key> = readwrite::get(self.wasi_handle, &self.format_key(KEYS_KEY))
-            .and_then(wasi_kv::incoming_value_consume_sync)
-            .map(|bytes| serde_json::from_slice(&bytes).unwrap_or_else(|_e| vec![]))
-            .unwrap_or_else(|_e| vec![]);
+    fn get_all(&self) -> Result<Vec<platform_kv::KeyValue>, platform_kv::Error> {
+        let all_keys: Vec<platform_kv::Key> =
+            readwrite::get(self.wasi_handle, &self.format_key(KEYS_KEY))
+                .and_then(wasi_kv::incoming_value_consume_sync)
+                .map(|bytes| serde_json::from_slice(&bytes).unwrap_or_else(|_e| vec![]))
+                .unwrap_or_else(|_e| vec![]);
 
         let mut all_values = Vec::new();
         for key in all_keys {
@@ -55,7 +55,11 @@ impl GuestBucket for BucketResource {
         Ok(all_values)
     }
 
-    fn set(&self, key: Key, value: Value) -> Result<(), Error> {
+    fn set(
+        &self,
+        key: platform_kv::Key,
+        value: platform_kv::Value,
+    ) -> Result<(), platform_kv::Error> {
         let mut all_keys = readwrite::get(self.wasi_handle, &self.format_key(KEYS_KEY))
             .and_then(wasi_kv::incoming_value_consume_sync)
             .map(|bytes| serde_json::from_slice(&bytes).unwrap_or_else(|_e| vec![]))
@@ -78,7 +82,7 @@ impl GuestBucket for BucketResource {
     }
 }
 
-impl From<wasi_kv::Error> for Error {
+impl From<wasi_kv::Error> for platform_kv::Error {
     fn from(value: wasi_kv::Error) -> Self {
         Self::Internal(format!(
             "WASI keyvalue error: {}, trace: {}",
@@ -88,7 +92,7 @@ impl From<wasi_kv::Error> for Error {
     }
 }
 
-impl From<serde_json::error::Error> for Error {
+impl From<serde_json::error::Error> for platform_kv::Error {
     fn from(value: serde_json::error::Error) -> Self {
         Self::Internal(format!("Error parsing JSON: {}", value))
     }
