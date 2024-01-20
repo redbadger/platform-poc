@@ -1,1 +1,6 @@
 .env
+build/
+target/
+keys/
+**/wit/deps/*
+sentinel

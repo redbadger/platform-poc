@@ -1,0 +1,26 @@
+[package]
+name = "platform-wasmcloud"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+serde = { version = "1.0.193", features = ["derive"] }
+serde_json = "1.0.108"
+wit-bindgen = { version = "0.16", features = ["default"] }
+
+[package.metadata.component]
+package = "platform-poc:platform-wasmcloud"
+
+[package.metadata.component.target]
+path = "wit/world.wit"
+world = "platform-wasmcloud"
+
+[package.metadata.component.target.dependencies]
+"platform-poc:keyvalue" = { path = "wit/deps/platform" }
+"wasi:keyvalue" = { path = "wit/deps/keyvalue" }
+"wasi:io" = { path = "wit/deps/io" }

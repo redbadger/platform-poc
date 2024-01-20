@@ -1,0 +1,42 @@
+apiVersion: core.oam.dev/v1beta1
+kind: Application
+metadata:
+  name: products-http
+  annotations:
+    version: v0.0.6
+    description: "Product service REST API"
+    experimental: true
+spec:
+  components:
+    - name: products-http
+      type: actor
+      properties:
+        # Try using `wash build -o json` and use the `actor_path` field, prepended with `file://`
+        image: file:///Users/viktor/Projects/platform-poc/platform-poc/rust-wasmcloud/compose/build/products_wasmcloud_s.wasm
+        # image: file:///Users/stuartharris/src/redbadger/platform-poc/rust-wasmcloud/compose/build/products_wasmcloud_s.wasm
+      traits:
+        - type: spreadscaler
+          properties:
+            replicas: 1
+        - type: linkdef
+          properties:
+            target: httpserver
+            values:
+              ADDRESS: 127.0.0.1:8081
+        - type: linkdef
+          properties:
+            target: keyvalue
+            values:
+              address: redis://127.0.0.1:6379
+
+    - name: httpserver
+      type: capability
+      properties:
+        image: wasmcloud.azurecr.io/httpserver:0.19.1
+        contract: wasmcloud:httpserver
+
+    - name: keyvalue
+      type: capability
+      properties:
+        image: wasmcloud.azurecr.io/kvredis:0.22.0
+        contract: wasmcloud:keyvalue

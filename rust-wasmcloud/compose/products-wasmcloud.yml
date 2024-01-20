@@ -1,0 +1,13 @@
+dependencies:
+  products: ../products/target/wasm32-wasi/release/products.wasm
+  platform-wasmcloud: ../platform-wasmcloud/target/wasm32-wasi/release/platform_wasmcloud.wasm
+
+instantiations:
+  root:
+    arguments:
+      platform-poc:products/products@0.1.0:
+        instance: products
+  products:
+    arguments:
+      platform-poc:keyvalue/keyvalue@0.1.0:
+        instance: platform-wasmcloud

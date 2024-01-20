@@ -1,0 +1,22 @@
+[package]
+name = "inventory"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+wit-bindgen = "0.16.0"
+
+[lib]
+crate-type = ["cdylib"]
+
+[package.metadata.component]
+package = "platform-poc:inventory"
+
+[package.metadata.component.target]
+path = "wit/world.wit"
+world = "inventory-service"
+
+[package.metadata.component.target.dependencies]
+"platform-poc:inventory" = { path = "wit/deps/inventory" }
