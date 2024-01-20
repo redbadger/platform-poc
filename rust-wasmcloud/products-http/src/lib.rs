@@ -44,7 +44,7 @@ impl Guest for HttpServer {
                                 .expect("failed to build response"),
                             Err(e) => Response::builder()
                                 .status(500)
-                                .body(format!("Internal server errror: {}", e))
+                                .body(format!("Internal server error: {}", e))
                                 .expect("failed to build response"),
                         }
                     }
@@ -60,7 +60,7 @@ impl Guest for HttpServer {
                                     .expect("failed to build response"),
                                 Err(e) => Response::builder()
                                     .status(500)
-                                    .body(format!("Internal server errror: {}", e))
+                                    .body(format!("Internal server error: {}", e))
                                     .expect("failed to build response"),
                             }
                         } else {

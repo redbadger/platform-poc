@@ -13,6 +13,7 @@ spec:
       properties:
         # Try using `wash build -o json` and use the `actor_path` field, prepended with `file://`
         image: file:///Users/viktor/Projects/platform-poc/platform-poc/rust-wasmcloud/compose/build/products_wasmcloud_s.wasm
+        # image: file:///Users/stuartharris/src/redbadger/platform-poc/rust-wasmcloud/compose/build/products_wasmcloud_s.wasm
       traits:
         - type: spreadscaler
           properties:
