@@ -1,0 +1,34 @@
+package platform-poc:products@0.1.0;
+
+interface types {
+    record product {
+        id: string, // UUID
+        name: string,
+        description: string,
+        price: s32,
+        sku: string,
+    }
+
+    variant error {
+        internal(string),
+        store-error(string),
+    }
+}
+
+interface products-init {
+    use types.{error};
+
+    /// Prepopulates the store with products if its empty
+    start: func() -> result<_, error>;
+}
+
+/// Products service interface provides access to the product catalog
+interface products {
+    use types.{product, error};
+
+    /// Creates a specified `product` in the catalog
+    create-product: func(product: product) -> result<_, error>;
+
+    /// Lists all products available in the catalog
+    list-products: func() -> result<list<product>, error>;
+}
