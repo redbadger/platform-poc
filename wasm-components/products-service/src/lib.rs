@@ -4,15 +4,24 @@ wit_bindgen::generate!({
 
 use exports::platform_poc::products::products::Guest as ProductGuest;
 use exports::platform_poc::products::products::{Error, Product};
+use serde::ser::SerializeStruct;
 use wasi::keyvalue::store::open;
 use wasi::logging::logging::{log, Level};
-use serde::{Deserialize, Deserializer};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 struct ProductComponent;
 
 impl ProductGuest for ProductComponent {
-    fn create_product(_product: Product) -> Result<(), Error> {
-        todo!()
+    fn create_product(product: Product) -> Result<(), Error> {
+        log(Level::Info, "products-service", "Creating product...");
+
+        let bucket = open("").expect("failed to open bucket");
+
+        let product_json = serde_json::to_string(&product).expect("failed to convert product to json");
+        bucket
+            .set(product.sku.as_str(), product_json.as_bytes()).expect("failed to set product");
+
+        Ok(())
     }
 
     fn list_products() -> Result<Vec<Product>, Error> {
@@ -134,6 +143,24 @@ impl<'de> Deserialize<'de> for Product {
 
         const FIELDS: &[&str] = &["id", "name", "description", "price", "sku"];
         deserializer.deserialize_struct("Product", FIELDS, ProductVisitor)
+    }
+}
+
+impl Serialize for Product {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        // Define the number of fields in the struct
+        let mut state = serializer.serialize_struct("Product", 5)?;
+        // Serialize each field
+        state.serialize_field("id", &self.id)?;
+        state.serialize_field("name", &self.name)?;
+        state.serialize_field("description", &self.description)?;
+        state.serialize_field("price", &self.price)?;
+        state.serialize_field("sku", &self.sku)?;
+        // End the serialization
+        state.end()
     }
 }
 
