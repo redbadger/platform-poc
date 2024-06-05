@@ -7,11 +7,37 @@ metadata:
     description: "TODO: Add a description for the application"
 spec:
   components:
+    - name: data-init
+      type: component
+      properties:
+        image: file:///Users/tornikekeburia/work/platform-poc/wasm-components/rust/data-init/build/data_init_s.wasm
+      traits:
+        - type: spreadscaler
+          properties:
+            replicas: 1
+        - type: link
+          properties:
+            target: sqldb-postgres
+            namespace: wasmcloud
+            package: postgres
+            interfaces: [query]
+            target_config:
+              - name: default-pg
+        - type: link
+          properties:
+            target: kvredis
+            namespace: wasi
+            package: keyvalue
+            interfaces: [store]
+            target_config:
+              - name: default-redis
+                properties:
+                  url: redis://127.0.0.1:6379              
 
     - name: http-controller
       type: component
       properties:
-        image: file:///Users/tornikekeburia/work/platform-poc/wasm-components/http-controller/build/http_controller_s.wasm
+        image: file:///Users/tornikekeburia/work/platform-poc/wasm-components/rust/http-controller/build/http_controller_s.wasm
       traits:
         - type: spreadscaler
           properties:
@@ -22,11 +48,17 @@ spec:
             namespace: platform-poc
             package: products
             interfaces: [products]
+        - type: link
+          properties:
+            target: data-init
+            namespace: platform-poc
+            package: data-init
+            interfaces: [init-funcs]
 
     - name: products-service
       type: component
       properties:
-        image: file:///Users/tornikekeburia/work/platform-poc/wasm-components/products-service/build/products_service_s.wasm
+        image: file:///Users/tornikekeburia/work/platform-poc/wasm-components/rust/products-service/build/products_service_s.wasm
       traits:
         - type: spreadscaler
           properties:
@@ -62,3 +94,8 @@ spec:
       type: capability
       properties:
         image: ghcr.io/wasmcloud/keyvalue-redis:0.24.0
+
+    - name: sqldb-postgres
+      type: capability
+      properties:
+        image: ghcr.io/wasmcloud/sqldb-postgres:0.1.0

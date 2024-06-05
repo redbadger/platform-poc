@@ -10,6 +10,8 @@ use serde_json::json;
 use wasi::http::types::*;
 use wasi::io::streams::StreamError;
 use wasi::logging::logging::{log, Level};
+use platform_poc::data_init::init_funcs::{init_all, init_orders, init_inventory, init_products};
+
 
 const MAX_READ_BYTES: u32 = 2048;
 
@@ -46,6 +48,34 @@ impl Guest for HttpServer {
                         serde_json::from_slice::<ProductData>(&body).unwrap().into();
                     create_product(&product).expect("failed to create product");
                     response_out.complete_response(201, "Created".as_bytes())
+                }
+                _ => response_out.complete_response(405, b"405 Method Not Allowed\n"),
+            },
+            "/data-init/all" => match method {
+                Method::Get => {
+                    init_all().expect("failed to initialize products");
+                    response_out.complete_response(200, "Products, inventory and orders schema initialized".as_bytes())
+                }
+                _ => response_out.complete_response(405, b"405 Method Not Allowed\n"),
+            },
+            "/data-init/products" => match method {
+                Method::Get => {
+                    init_products().expect("failed to initialize products");
+                    response_out.complete_response(200, "Products initialized".as_bytes())
+                }
+                _ => response_out.complete_response(405, b"405 Method Not Allowed\n"),
+            },
+            "/data-init/inventory" => match method {
+                Method::Get => {
+                    init_inventory().expect("failed to initialize inventory");
+                    response_out.complete_response(200, "Inventory initialized".as_bytes())
+                }
+                _ => response_out.complete_response(405, b"405 Method Not Allowed\n"),
+            },
+            "/data-init/orders" => match method {
+                Method::Get => {
+                    init_orders().expect("failed to initialize orders schema");
+                    response_out.complete_response(200, "Orders schema initialized".as_bytes())
                 }
                 _ => response_out.complete_response(405, b"405 Method Not Allowed\n"),
             },
