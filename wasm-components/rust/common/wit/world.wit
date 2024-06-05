@@ -1,0 +1,5 @@
+package platform-poc:http-controller;
+
+world common {
+  import platform-poc:products/products@0.1.0;
+}
