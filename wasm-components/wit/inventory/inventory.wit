@@ -2,7 +2,7 @@ package platform-poc:inventory@0.1.0;
 
 interface types {
     record availability {
-        sku-code: s32,
+        sku: string,
         is-in-stock: bool,
     }
 
@@ -15,5 +15,5 @@ interface types {
 interface inventory {
     use types.{error, availability};
 
-    get-inventory: func(sku-code: list<s32>) -> list<availability>;
+    get-inventory: func(skus: list<string>) -> result<list<availability>, error>;
 }

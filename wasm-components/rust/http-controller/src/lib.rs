@@ -3,11 +3,14 @@ wit_bindgen::generate!({
 });
 
 use anyhow::{anyhow, bail, Result};
+use common::inventory::Availability as AvailabilityData;
 use common::products::Product as ProductData;
 use exports::wasi::http::incoming_handler::Guest;
 use platform_poc::data_init::init_funcs::{init_all, init_inventory, init_orders, init_products};
+use platform_poc::inventory::inventory::{get_inventory, Availability};
 use platform_poc::products::products::{create_product, list_products, Product};
 use serde_json::json;
+use url::Url;
 use wasi::http::types::Method;
 use wasi::http::types::*;
 use wasi::io::streams::StreamError;
@@ -41,6 +44,24 @@ impl Into<Product> for ProductData {
     }
 }
 
+impl From<Availability> for AvailabilityData {
+    fn from(product: Availability) -> Self {
+        AvailabilityData {
+            sku: product.sku,
+            is_in_stock: product.is_in_stock,
+        }
+    }
+}
+
+impl Into<Availability> for AvailabilityData {
+    fn into(self) -> Availability {
+        Availability {
+            sku: self.sku,
+            is_in_stock: self.is_in_stock,
+        }
+    }
+}
+
 // TODO: imprtove general error handling everywhere
 impl Guest for HttpServer {
     fn handle(request: IncomingRequest, response_out: ResponseOutparam) {
@@ -53,12 +74,24 @@ impl Guest for HttpServer {
             format!("Received {:?} request at {}", method, path).as_str(),
         );
 
-        // skip the first empty string
-        let path_parts: Vec<&str> = path.split("/").skip(1).collect();
+        let parsed_url =
+            Url::parse(&format!("http://example.com{}", path)).expect("Failed to parse URL");
+
+        let path_parts: Vec<&str> = parsed_url
+            .path_segments()
+            .map(|c| c.map(|c| c).collect())
+            .unwrap_or_else(Vec::new);
 
         match path_parts.as_slice() {
-            ["products", path_rest @ ..] => Routes::products(path_rest, request, response_out),
-            ["data-init", path_rest @ ..] => Routes::data_init(path_rest, request, response_out),
+            ["products", path_rest @ ..] => {
+                Routes::products(path_rest, parsed_url.query(), request, response_out)
+            }
+            ["data-init", path_rest @ ..] => {
+                Routes::data_init(path_rest, parsed_url.query(), request, response_out)
+            }
+            ["inventory", path_rest @ ..] => {
+                Routes::inventory(path_rest, parsed_url.query(), request, response_out)
+            }
             _ => response_out.complete_response(404, b"404 Not Found\n"),
         }
     }
@@ -106,7 +139,12 @@ struct Routes;
 
 // TODO: refactor this into less of a mess
 impl Routes {
-    fn products(path_rest: &[&str], request: IncomingRequest, response_out: ResponseOutparam) {
+    fn products(
+        path_rest: &[&str],
+        _query: Option<&str>,
+        request: IncomingRequest,
+        response_out: ResponseOutparam,
+    ) {
         let method = request.method();
 
         if !path_rest.is_empty() {
@@ -134,7 +172,12 @@ impl Routes {
         }
     }
 
-    fn data_init(path_rest: &[&str], request: IncomingRequest, response_out: ResponseOutparam) {
+    fn data_init(
+        path_rest: &[&str],
+        _query: Option<&str>,
+        request: IncomingRequest,
+        response_out: ResponseOutparam,
+    ) {
         let method = request.method();
 
         if path_rest.len() > 1 {
@@ -176,6 +219,53 @@ impl Routes {
                 },
                 _ => response_out.complete_response(404, b"404 Not Found\n"),
             },
+            _ => response_out.complete_response(405, b"405 Method Not Allowed\n"),
+        }
+    }
+
+    fn inventory(
+        path_rest: &[&str],
+        query: Option<&str>,
+        request: IncomingRequest,
+        response_out: ResponseOutparam,
+    ) {
+        if !path_rest.is_empty() {
+            return response_out.complete_response(404, b"404 Not Found\n");
+        }
+
+        if let None = query {
+            return response_out.complete_response(400, b"400 Bad Request\n");
+        }
+
+        if let Some(value) = query {
+            if !value.contains("skus=") {
+                return response_out.complete_response(400, b"400 Bad Request\n");
+            }
+        }
+
+        let method = request.method();
+
+        match method {
+            Method::Get => {
+                let query_str = query.unwrap();
+                let mut query_pairs = url::form_urlencoded::parse(query_str.as_bytes());
+
+                let skus_string = query_pairs.find(|(key, _)| key == "skus").unwrap().1;
+
+                let skus_list: Vec<String> =
+                    skus_string.split(',').map(|s| s.to_string()).collect();
+
+                let inventory =
+                    get_inventory(skus_list.as_slice()).expect("failed to fetch inventory");
+                let inventory_data: Vec<AvailabilityData> = inventory
+                    .iter()
+                    .map(|entry| AvailabilityData::from(entry.clone()))
+                    .collect();
+
+                let inventory_json = json!(inventory_data).to_string();
+
+                response_out.complete_response(200, inventory_json.as_bytes())
+            }
             _ => response_out.complete_response(405, b"405 Method Not Allowed\n"),
         }
     }

@@ -54,6 +54,12 @@ spec:
             namespace: platform-poc
             package: data-init
             interfaces: [init-funcs]
+        - type: link
+          properties:
+            target: inventory-service
+            namespace: platform-poc
+            package: inventory
+            interfaces: [inventory]
 
     - name: products-service
       type: component
@@ -73,6 +79,23 @@ spec:
               - name: default-redis
                 properties:
                   url: redis://127.0.0.1:6379
+
+    - name: inventory-service
+      type: component
+      properties:
+        image: file:///Users/tornikekeburia/work/platform-poc/wasm-components/rust/inventory-service/build/inventory_service_s.wasm
+      traits:
+        - type: spreadscaler
+          properties:
+            replicas: 1
+        - type: link
+          properties:
+            target: sqldb-postgres
+            namespace: wasmcloud
+            package: postgres
+            interfaces: [query]
+            target_config:
+              - name: default-pg
 
     - name: httpserver
       type: capability

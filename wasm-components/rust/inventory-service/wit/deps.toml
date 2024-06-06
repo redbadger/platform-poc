@@ -1,0 +1,3 @@
+logging = "https://github.com/WebAssembly/wasi-logging/archive/main.tar.gz"
+postgres = "https://github.com/vados-cosmonic/wit-wasmcloud-postgres/archive/main.tar.gz"
+inventory = "../../../wit/inventory"
