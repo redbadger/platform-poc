@@ -3,19 +3,43 @@ wit_bindgen::generate!({
 });
 
 use anyhow::{anyhow, bail, Result};
-use common::products::platform_poc::products::products::{create_product, list_products, Product};
 use common::products::Product as ProductData;
 use exports::wasi::http::incoming_handler::Guest;
+use platform_poc::data_init::init_funcs::{init_all, init_inventory, init_orders, init_products};
+use platform_poc::products::products::{create_product, list_products, Product};
 use serde_json::json;
+use wasi::http::types::Method;
 use wasi::http::types::*;
 use wasi::io::streams::StreamError;
 use wasi::logging::logging::{log, Level};
-use platform_poc::data_init::init_funcs::{init_all, init_orders, init_inventory, init_products};
-
 
 const MAX_READ_BYTES: u32 = 2048;
 
 struct HttpServer;
+
+impl From<Product> for ProductData {
+    fn from(product: Product) -> Self {
+        ProductData {
+            id: product.id,
+            name: product.name,
+            description: product.description,
+            price: product.price,
+            sku: product.sku,
+        }
+    }
+}
+
+impl Into<Product> for ProductData {
+    fn into(self) -> Product {
+        Product {
+            id: self.id,
+            name: self.name,
+            description: self.description,
+            price: self.price,
+            sku: self.sku,
+        }
+    }
+}
 
 // TODO: imprtove general error handling everywhere
 impl Guest for HttpServer {
@@ -29,56 +53,12 @@ impl Guest for HttpServer {
             format!("Received {:?} request at {}", method, path).as_str(),
         );
 
-        // TODO: refactor this into less of a mess
-        match path.as_str() {
-            "/products" => match method {
-                Method::Get => {
-                    let products = list_products().expect("failed to list products");
-                    let product_data = products
-                        .iter()
-                        .map(|product| ProductData::from(product.clone()))
-                        .collect::<Vec<ProductData>>();
-                    let products_json = json!(product_data).to_string();
+        // skip the first empty string
+        let path_parts: Vec<&str> = path.split("/").skip(1).collect();
 
-                    response_out.complete_response(200, products_json.as_bytes())
-                }
-                Method::Post => {
-                    let body = request.read_body().unwrap();
-                    let product: Product =
-                        serde_json::from_slice::<ProductData>(&body).unwrap().into();
-                    create_product(&product).expect("failed to create product");
-                    response_out.complete_response(201, "Created".as_bytes())
-                }
-                _ => response_out.complete_response(405, b"405 Method Not Allowed\n"),
-            },
-            "/data-init/all" => match method {
-                Method::Get => {
-                    init_all().expect("failed to initialize products");
-                    response_out.complete_response(200, "Products, inventory and orders schema initialized".as_bytes())
-                }
-                _ => response_out.complete_response(405, b"405 Method Not Allowed\n"),
-            },
-            "/data-init/products" => match method {
-                Method::Get => {
-                    init_products().expect("failed to initialize products");
-                    response_out.complete_response(200, "Products initialized".as_bytes())
-                }
-                _ => response_out.complete_response(405, b"405 Method Not Allowed\n"),
-            },
-            "/data-init/inventory" => match method {
-                Method::Get => {
-                    init_inventory().expect("failed to initialize inventory");
-                    response_out.complete_response(200, "Inventory initialized".as_bytes())
-                }
-                _ => response_out.complete_response(405, b"405 Method Not Allowed\n"),
-            },
-            "/data-init/orders" => match method {
-                Method::Get => {
-                    init_orders().expect("failed to initialize orders schema");
-                    response_out.complete_response(200, "Orders schema initialized".as_bytes())
-                }
-                _ => response_out.complete_response(405, b"405 Method Not Allowed\n"),
-            },
+        match path_parts.as_slice() {
+            ["products", path_rest @ ..] => Routes::products(path_rest, request, response_out),
+            ["data-init", path_rest @ ..] => Routes::data_init(path_rest, request, response_out),
             _ => response_out.complete_response(404, b"404 Not Found\n"),
         }
     }
@@ -119,6 +99,85 @@ impl IncomingRequest {
         drop(incoming_req_body_stream);
         IncomingBody::finish(incoming_req_body);
         Ok(buf)
+    }
+}
+
+struct Routes;
+
+// TODO: refactor this into less of a mess
+impl Routes {
+    fn products(path_rest: &[&str], request: IncomingRequest, response_out: ResponseOutparam) {
+        let method = request.method();
+
+        if !path_rest.is_empty() {
+            return response_out.complete_response(404, b"404 Not Found\n");
+        }
+
+        match method {
+            Method::Get => {
+                let products = list_products().expect("failed to list products");
+                let product_data = products
+                    .iter()
+                    .map(|product| ProductData::from(product.clone()))
+                    .collect::<Vec<ProductData>>();
+                let products_json = json!(product_data).to_string();
+
+                response_out.complete_response(200, products_json.as_bytes())
+            }
+            Method::Post => {
+                let body = request.read_body().unwrap();
+                let product: Product = serde_json::from_slice::<ProductData>(&body).unwrap().into();
+                create_product(&product).expect("failed to create product");
+                response_out.complete_response(201, "Created".as_bytes())
+            }
+            _ => response_out.complete_response(405, b"405 Method Not Allowed\n"),
+        }
+    }
+
+    fn data_init(path_rest: &[&str], request: IncomingRequest, response_out: ResponseOutparam) {
+        let method = request.method();
+
+        if path_rest.len() > 1 {
+            return response_out.complete_response(404, b"404 Not Found\n");
+        }
+
+        match method {
+            Method::Get => match path_rest {
+                ["all"] => match method {
+                    Method::Get => {
+                        init_all().expect("failed to initialize products");
+                        response_out.complete_response(
+                            200,
+                            "Products, inventory and orders schema initialized".as_bytes(),
+                        )
+                    }
+                    _ => response_out.complete_response(405, b"405 Method Not Allowed\n"),
+                },
+                ["products"] => match method {
+                    Method::Get => {
+                        init_products().expect("failed to initialize products");
+                        response_out.complete_response(200, "Products initialized".as_bytes())
+                    }
+                    _ => response_out.complete_response(405, b"405 Method Not Allowed\n"),
+                },
+                ["inventory"] => match method {
+                    Method::Get => {
+                        init_inventory().expect("failed to initialize inventory");
+                        response_out.complete_response(200, "Inventory initialized".as_bytes())
+                    }
+                    _ => response_out.complete_response(405, b"405 Method Not Allowed\n"),
+                },
+                ["orders"] => match method {
+                    Method::Get => {
+                        init_orders().expect("failed to initialize orders schema");
+                        response_out.complete_response(200, "Orders schema initialized".as_bytes())
+                    }
+                    _ => response_out.complete_response(405, b"405 Method Not Allowed\n"),
+                },
+                _ => response_out.complete_response(404, b"404 Not Found\n"),
+            },
+            _ => response_out.complete_response(405, b"405 Method Not Allowed\n"),
+        }
     }
 }
 
