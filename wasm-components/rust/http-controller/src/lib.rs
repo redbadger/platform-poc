@@ -4,10 +4,12 @@ wit_bindgen::generate!({
 
 use anyhow::{anyhow, bail, Result};
 use common::inventory::Availability as AvailabilityData;
+use common::orders::{LineItem as LineItemData, Order as OrderData};
 use common::products::Product as ProductData;
 use exports::wasi::http::incoming_handler::Guest;
 use platform_poc::data_init::init_funcs::{init_all, init_inventory, init_orders, init_products};
 use platform_poc::inventory::inventory::{get_inventory, Availability};
+use platform_poc::orders::orders::{create_order, get_orders, LineItem, Order, Error as OrderError};
 use platform_poc::products::products::{create_product, list_products, Product};
 use serde_json::json;
 use url::Url;
@@ -32,14 +34,14 @@ impl From<Product> for ProductData {
     }
 }
 
-impl Into<Product> for ProductData {
-    fn into(self) -> Product {
+impl From<ProductData> for Product {
+    fn from(product: ProductData) -> Self {
         Product {
-            id: self.id,
-            name: self.name,
-            description: self.description,
-            price: self.price,
-            sku: self.sku,
+            id: product.id,
+            name: product.name,
+            description: product.description,
+            price: product.price,
+            sku: product.sku,
         }
     }
 }
@@ -53,16 +55,41 @@ impl From<Availability> for AvailabilityData {
     }
 }
 
-impl Into<Availability> for AvailabilityData {
-    fn into(self) -> Availability {
-        Availability {
-            sku: self.sku,
-            is_in_stock: self.is_in_stock,
+impl From<&LineItemData> for LineItem {
+    fn from(value: &LineItemData) -> Self {
+        LineItem {
+            sku: value.sku.clone(),
+            price: value.price,
+            quantity: value.quantity,
         }
     }
 }
 
-// TODO: imprtove general error handling everywhere
+impl From<LineItem> for LineItemData {
+    fn from(value: LineItem) -> Self {
+        LineItemData {
+            sku: value.sku.clone(),
+            price: value.price,
+            quantity: value.quantity,
+        }
+    }
+}
+
+impl From<Order> for OrderData {
+    fn from(order: Order) -> Self {
+        OrderData {
+            order_number: order.order_number.clone(),
+            total: order.total,
+            line_items: order
+                .line_items
+                .iter()
+                .map(|line_item| LineItemData::from(line_item.clone()))
+                .collect(),
+        }
+    }
+}
+
+
 impl Guest for HttpServer {
     fn handle(request: IncomingRequest, response_out: ResponseOutparam) {
         let path = request.path_with_query().unwrap();
@@ -75,7 +102,7 @@ impl Guest for HttpServer {
         );
 
         let parsed_url =
-            Url::parse(&format!("http://example.com{}", path)).expect("Failed to parse URL");
+            Url::parse(&format!("http://example.com{}", path)).expect("HTTP-CONTROLLER-GUEST: Failed to parse URL");
 
         let path_parts: Vec<&str> = parsed_url
             .path_segments()
@@ -91,6 +118,9 @@ impl Guest for HttpServer {
             }
             ["inventory", path_rest @ ..] => {
                 Routes::inventory(path_rest, parsed_url.query(), request, response_out)
+            }
+            ["orders", path_rest @ ..] => {
+                Routes::orders(path_rest, parsed_url.query(), request, response_out)
             }
             _ => response_out.complete_response(404, b"404 Not Found\n"),
         }
@@ -108,7 +138,7 @@ impl ResponseOutparam {
             .unwrap()
             .blocking_write_and_flush(body)
             .unwrap();
-        OutgoingBody::finish(response_body, None).expect("failed to finish response body");
+        OutgoingBody::finish(response_body, None).expect("HTTP-CONTROLLER-RESPONSE: failed to finish response body");
     }
 }
 
@@ -137,6 +167,7 @@ impl IncomingRequest {
 
 struct Routes;
 
+// TODO: improve error handling everywhere
 // TODO: refactor this into less of a mess
 impl Routes {
     fn products(
@@ -153,7 +184,7 @@ impl Routes {
 
         match method {
             Method::Get => {
-                let products = list_products().expect("failed to list products");
+                let products = list_products().expect("HTTP-CONTROLLER-PRODUCTS-GET: failed to list products");
                 let product_data = products
                     .iter()
                     .map(|product| ProductData::from(product.clone()))
@@ -163,9 +194,9 @@ impl Routes {
                 response_out.complete_response(200, products_json.as_bytes())
             }
             Method::Post => {
-                let body = request.read_body().unwrap();
+                let body = request.read_body().expect("HTTP-CONTROLLER-PRODUCTS-POST: failed to read body");
                 let product: Product = serde_json::from_slice::<ProductData>(&body).unwrap().into();
-                create_product(&product).expect("failed to create product");
+                create_product(&product).expect("HTTP-CONTROLLER-PRODUCTS-POST: failed to create product");
                 response_out.complete_response(201, "Created".as_bytes())
             }
             _ => response_out.complete_response(405, b"405 Method Not Allowed\n"),
@@ -188,7 +219,7 @@ impl Routes {
             Method::Get => match path_rest {
                 ["all"] => match method {
                     Method::Get => {
-                        init_all().expect("failed to initialize products");
+                        init_all().expect("HTTP-CONTROLLER-DATA-INIT-ALL failed to initialize products");
                         response_out.complete_response(
                             200,
                             "Products, inventory and orders schema initialized".as_bytes(),
@@ -198,21 +229,21 @@ impl Routes {
                 },
                 ["products"] => match method {
                     Method::Get => {
-                        init_products().expect("failed to initialize products");
+                        init_products().expect("HTTP-CONTROLLER-DATA-INIT-PRODUCTS: failed to initialize products");
                         response_out.complete_response(200, "Products initialized".as_bytes())
                     }
                     _ => response_out.complete_response(405, b"405 Method Not Allowed\n"),
                 },
                 ["inventory"] => match method {
                     Method::Get => {
-                        init_inventory().expect("failed to initialize inventory");
+                        init_inventory().expect("HTTP-CONTROLLER-DATA-INIT-INVENTORY: failed to initialize inventory");
                         response_out.complete_response(200, "Inventory initialized".as_bytes())
                     }
                     _ => response_out.complete_response(405, b"405 Method Not Allowed\n"),
                 },
                 ["orders"] => match method {
                     Method::Get => {
-                        init_orders().expect("failed to initialize orders schema");
+                        init_orders().expect("HTTP-CONTROLLER-DATA-INIT-ORDERS: failed to initialize orders schema");
                         response_out.complete_response(200, "Orders schema initialized".as_bytes())
                     }
                     _ => response_out.complete_response(405, b"405 Method Not Allowed\n"),
@@ -256,7 +287,7 @@ impl Routes {
                     skus_string.split(',').map(|s| s.to_string()).collect();
 
                 let inventory =
-                    get_inventory(skus_list.as_slice()).expect("failed to fetch inventory");
+                    get_inventory(skus_list.as_slice()).expect("HTTP-CONTROLLER-INVENTORY-GET: failed to fetch inventory");
                 let inventory_data: Vec<AvailabilityData> = inventory
                     .iter()
                     .map(|entry| AvailabilityData::from(entry.clone()))
@@ -265,6 +296,51 @@ impl Routes {
                 let inventory_json = json!(inventory_data).to_string();
 
                 response_out.complete_response(200, inventory_json.as_bytes())
+            }
+            _ => response_out.complete_response(405, b"405 Method Not Allowed\n"),
+        }
+    }
+
+    fn orders(
+        path_rest: &[&str],
+        _query: Option<&str>,
+        request: IncomingRequest,
+        response_out: ResponseOutparam,
+    ) {
+        if !path_rest.is_empty() {
+            return response_out.complete_response(404, b"404 Not Found\n");
+        }
+
+        let method = request.method();
+
+        match method {
+            Method::Get => {
+                let orders = get_orders().expect("HTTP-CONTROLLER-ORDERS-GET: failed to get orders");
+                let order_data: Vec<OrderData> = orders.iter().map(|order| OrderData::from(order.clone())).collect();
+                let orders_json = json!(order_data).to_string();
+                
+                response_out.complete_response(200, orders_json.as_bytes())
+            }
+            Method::Post => {
+                let body = request.read_body().expect("HTTP-CONTROLLER-ORDERS-POST: failed to read body");
+                let line_item_data: Vec<common::orders::LineItem> =
+                    serde_json::from_slice(&body).unwrap();
+
+                let line_items: Vec<LineItem> =
+                    line_item_data.iter().map(|item| LineItem::from(item)).collect();
+
+                let create_response = create_order(line_items.as_slice());
+
+                match create_response {
+                    Ok(_) => {
+                        response_out.complete_response(201, "Created".as_bytes())
+                    }
+                    Err(e) => {
+                        let OrderError::Internal(msg) = e;
+                        response_out.complete_response(500, format!("Unable to place order: {}", msg).as_bytes())
+                    }
+                    
+                }
             }
             _ => response_out.complete_response(405, b"405 Method Not Allowed\n"),
         }

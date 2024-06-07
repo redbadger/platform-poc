@@ -15,12 +15,6 @@ interface types {
     }
 }
 
-interface products-init {
-    use types.{error};
-
-    /// Prepopulates the store with products if its empty
-    start: func() -> result<_, error>;
-}
 
 /// Products service interface provides access to the product catalog
 interface products {

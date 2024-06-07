@@ -32,7 +32,7 @@ impl Guest for HttpServer {
             let sql_result = query(
                 "SELECT sku, quantity FROM inventory.t_inventory WHERE sku = $1",
                 &[PgValue::Text(sku)],
-            ).expect("failed to query inventory");
+            ).expect("INVENTORY-SERVICE-GET-INVENTORY: failed to query inventory");
             // TODO: making an assumption that there's always at most 1 entry, this is not enforced by the database
             // schema - would be nice to handle this better
             if !sql_result.is_empty() {

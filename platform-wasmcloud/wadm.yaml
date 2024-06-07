@@ -7,10 +7,11 @@ metadata:
     description: "TODO: Add a description for the application"
 spec:
   components:
+#################### COMPONENTS ####################
     - name: data-init
       type: component
       properties:
-        image: file:///Users/tornikekeburia/work/platform-poc/wasm-components/rust/data-init/build/data_init_s.wasm
+        image: file://../wasm-components/rust/data-init/build/data_init_s.wasm
       traits:
         - type: spreadscaler
           properties:
@@ -37,7 +38,7 @@ spec:
     - name: http-controller
       type: component
       properties:
-        image: file:///Users/tornikekeburia/work/platform-poc/wasm-components/rust/http-controller/build/http_controller_s.wasm
+        image: file://../wasm-components/rust/http-controller/build/http_controller_s.wasm
       traits:
         - type: spreadscaler
           properties:
@@ -60,11 +61,17 @@ spec:
             namespace: platform-poc
             package: inventory
             interfaces: [inventory]
+        - type: link
+          properties:
+            target: orders-service
+            namespace: platform-poc
+            package: orders
+            interfaces: [orders]
 
     - name: products-service
       type: component
       properties:
-        image: file:///Users/tornikekeburia/work/platform-poc/wasm-components/rust/products-service/build/products_service_s.wasm
+        image: file://../wasm-components/rust/products-service/build/products_service_s.wasm
       traits:
         - type: spreadscaler
           properties:
@@ -83,7 +90,7 @@ spec:
     - name: inventory-service
       type: component
       properties:
-        image: file:///Users/tornikekeburia/work/platform-poc/wasm-components/rust/inventory-service/build/inventory_service_s.wasm
+        image: file://../wasm-components/rust/inventory-service/build/inventory_service_s.wasm
       traits:
         - type: spreadscaler
           properties:
@@ -96,6 +103,31 @@ spec:
             interfaces: [query]
             target_config:
               - name: default-pg
+
+    - name: orders-service
+      type: component
+      properties:
+        image: file://../wasm-components/rust/orders-service/build/orders_service_s.wasm
+      traits:
+        - type: spreadscaler
+          properties:
+            replicas: 1
+        - type: link
+          properties:
+            target: sqldb-postgres
+            namespace: wasmcloud
+            package: postgres
+            interfaces: [query]
+            target_config:
+              - name: default-pg
+        - type: link
+          properties:
+            target: inventory-service
+            namespace: platform-poc
+            package: inventory
+            interfaces: [inventory]              
+
+#################### CAPABILITIES ####################
 
     - name: httpserver
       type: capability

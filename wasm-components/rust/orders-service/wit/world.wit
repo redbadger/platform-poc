@@ -1,0 +1,9 @@
+package platform-poc:orders-service;
+
+world orders-service {
+  import wasmcloud:postgres/query@0.1.0-draft;
+  import wasi:logging/logging;
+  import platform-poc:inventory/inventory@0.1.0;
+  
+  export platform-poc:orders/orders@0.1.0;
+}
