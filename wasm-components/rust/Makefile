@@ -1,4 +1,4 @@
-TARGET_DIRS = common/ data-init/ http-controller/ inventory-service/ orders-service/ products-service/
+TARGET_DIRS = common/ data-init/ http-controller/ inventory-service/ orders-service/ products-service/ notification-service/
 
 build-all:
 	@for dir in $(TARGET_DIRS); do \

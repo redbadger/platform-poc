@@ -1,5 +1,5 @@
 [package]
-name = "orders-service"
+name = "notification-service"
 edition = "2021"
 version = "0.1.0"
 
@@ -10,7 +10,6 @@ crate-type = ["cdylib"]
 
 [dependencies]
 wit-bindgen = { version = "0.24", features = ["default"] }
-uuid = { version = "1.8.0", features = ["v4"] }
 common = { path = "../common" }
 serde_json = "1.0.117"
 serde = { version = "1.0", features = ["derive"] }

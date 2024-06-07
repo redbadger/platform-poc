@@ -4,6 +4,7 @@ world orders-service {
   import wasmcloud:postgres/query@0.1.0-draft;
   import wasi:logging/logging;
   import platform-poc:inventory/inventory@0.1.0;
+  import wasmcloud:messaging/consumer@0.2.0;
   
   export platform-poc:orders/orders@0.1.0;
 }

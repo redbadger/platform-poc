@@ -10,8 +10,10 @@ use platform_poc::orders::types::{Error, LineItem, Order};
 use uuid::Uuid;
 use wasi::logging::logging::{log, Level};
 use wasmcloud::postgres::query::{query, PgValue};
-
+use wasmcloud::messaging::consumer::{publish, BrokerMessage};
 use wasmcloud::postgres::types::ResultRowEntry;
+use common::NOTIFICATION_SUBJECT;
+use common::notification::OrderNotification;
 
 struct HttpServer;
 
@@ -59,12 +61,14 @@ impl Guest for HttpServer {
                 .iter()
                 .fold(0, |acc, item| acc + item.price * item.quantity);
 
+            let order_number = Uuid::new_v4().to_string();
+
             let pg_response = query(
                 "-- Create order entry
             INSERT INTO orders.t_orders (order_number, total)
             VALUES ($1, $2) RETURNING id",
                 &[
-                    PgValue::Text(Uuid::new_v4().to_string()),
+                    PgValue::Text(order_number.clone()),
                     PgValue::Integer(*total),
                 ],
             )
@@ -89,6 +93,25 @@ impl Guest for HttpServer {
 
             // TODO: make sure no idle transactions are left hanging if things go wrong here (rollback)
             query("COMMIT;", &[]).expect("ORDER-SERVICE-CREATE-ORDER: Failed to commit transaction");
+
+            let notification = OrderNotification {
+                order_number,
+            };
+
+            let serialized: Vec<u8> = serde_json::to_vec(&notification).expect("Serialization failed");
+
+            let msg = BrokerMessage {
+                subject: NOTIFICATION_SUBJECT.to_string(),
+                reply_to: None,
+                body: serialized
+            };
+            
+            let res = publish(&msg);
+
+            if let Err(e) = res {
+                log(Level::Error, "orders-service", &format!("Failed to publish notification: {:?}", e));
+            }
+    
         } else {
             log(
                 Level::Info,

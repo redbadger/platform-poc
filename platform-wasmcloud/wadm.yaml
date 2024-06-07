@@ -33,7 +33,7 @@ spec:
             target_config:
               - name: default-redis
                 properties:
-                  url: redis://127.0.0.1:6379              
+                  url: redis://127.0.0.1:6379
 
     - name: http-controller
       type: component
@@ -104,6 +104,15 @@ spec:
             target_config:
               - name: default-pg
 
+    - name: notification-service
+      type: component
+      properties:
+        image: file://../wasm-components/rust/notification-service/build/notification_service_s.wasm
+      traits:
+        - type: spreadscaler
+          properties:
+            replicas: 1
+
     - name: orders-service
       type: component
       properties:
@@ -125,7 +134,13 @@ spec:
             target: inventory-service
             namespace: platform-poc
             package: inventory
-            interfaces: [inventory]              
+            interfaces: [inventory]
+        - type: link
+          properties:
+            target: nats
+            namespace: wasmcloud
+            package: messaging
+            interfaces: [consumer]
 
 #################### CAPABILITIES ####################
 
@@ -144,7 +159,7 @@ spec:
               - name: default-http
                 properties:
                   address: 127.0.0.1:8080
-    
+
     - name: kvredis
       type: capability
       properties:
@@ -154,3 +169,19 @@ spec:
       type: capability
       properties:
         image: ghcr.io/wasmcloud/sqldb-postgres:0.1.0
+
+    - name: nats
+      type: capability
+      properties:
+        image: ghcr.io/wasmcloud/messaging-nats:0.20.0
+      traits:
+        - type: link
+          properties:
+            target: notification-service
+            namespace: wasmcloud
+            package: messaging
+            interfaces: [handler]
+            source_config:
+              - name: default-nats
+                properties:
+                  subscriptions: "platform-poc.order-notification"        
