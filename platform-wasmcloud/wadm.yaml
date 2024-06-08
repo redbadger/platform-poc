@@ -12,6 +12,7 @@ spec:
       type: component
       properties:
         image: file://../wasm-components/rust/data-init/build/data_init_s.wasm
+        id: data-init
       traits:
         - type: spreadscaler
           properties:
@@ -32,13 +33,12 @@ spec:
             interfaces: [store]
             target_config:
               - name: default-redis
-                properties:
-                  url: redis://127.0.0.1:6379
 
     - name: http-controller
       type: component
       properties:
         image: file://../wasm-components/rust/http-controller/build/http_controller_s.wasm
+        id: http-controller
       traits:
         - type: spreadscaler
           properties:
@@ -72,6 +72,7 @@ spec:
       type: component
       properties:
         image: file://../wasm-components/rust/products-service/build/products_service_s.wasm
+        id: products-service
       traits:
         - type: spreadscaler
           properties:
@@ -84,13 +85,12 @@ spec:
             interfaces: [store]
             target_config:
               - name: default-redis
-                properties:
-                  url: redis://127.0.0.1:6379
 
     - name: inventory-service
       type: component
       properties:
         image: file://../wasm-components/rust/inventory-service/build/inventory_service_s.wasm
+        id: inventory-service
       traits:
         - type: spreadscaler
           properties:
@@ -108,6 +108,7 @@ spec:
       type: component
       properties:
         image: file://../wasm-components/rust/notification-service/build/notification_service_s.wasm
+        id: notification-service
       traits:
         - type: spreadscaler
           properties:
@@ -117,6 +118,7 @@ spec:
       type: component
       properties:
         image: file://../wasm-components/rust/orders-service/build/orders_service_s.wasm
+        id: orders-service
       traits:
         - type: spreadscaler
           properties:
@@ -147,7 +149,8 @@ spec:
     - name: httpserver
       type: capability
       properties:
-        image: ghcr.io/wasmcloud/http-server:0.20.0
+        image: ghcr.io/wasmcloud/http-server:0.20.1
+        id: http-server
       traits:
         - type: link
           properties:
@@ -157,23 +160,24 @@ spec:
             interfaces: [incoming-handler]
             source_config:
               - name: default-http
-                properties:
-                  address: 127.0.0.1:8080
 
     - name: kvredis
       type: capability
       properties:
         image: ghcr.io/wasmcloud/keyvalue-redis:0.24.0
+        id: kv-redis
 
     - name: sqldb-postgres
       type: capability
       properties:
         image: ghcr.io/wasmcloud/sqldb-postgres:0.1.0
+        id: sql-postgres
 
     - name: nats
       type: capability
       properties:
         image: ghcr.io/wasmcloud/messaging-nats:0.20.0
+        id: nats
       traits:
         - type: link
           properties:
@@ -183,5 +187,3 @@ spec:
             interfaces: [handler]
             source_config:
               - name: default-nats
-                properties:
-                  subscriptions: "platform-poc.order-notification"        

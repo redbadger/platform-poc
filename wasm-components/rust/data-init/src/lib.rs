@@ -27,6 +27,7 @@ impl Guest for HttpServer {
             bucket
                 .set(product.sku.as_str(), product_json.as_bytes())
                 .expect("DATA-INIT-PRODUCTS: failed to set product");
+
         }
         log(Level::Info, "data-init", "Products initialized!");
         Ok(())
