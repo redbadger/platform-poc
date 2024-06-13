@@ -1,0 +1,24 @@
+[inventory]
+path = "../../../wit/inventory"
+sha256 = "3376225c75b4e14d900654db0a74370d1f6e077341142442d84f5c9eb456d0fc"
+sha512 = "3a2cba909284b379d453fd005dde50552a25c0ba938711c14d1d0e954fab9d95ba4957f0bf5b3b32b958bd252fad64ea974aa05abb20e243ad28912335f80bf2"
+
+[logging]
+url = "https://github.com/WebAssembly/wasi-logging/archive/main.tar.gz"
+sha256 = "9676b482485bb0fd2751a390374c1108865a096b7037f4b5dbe524f066bfb06e"
+sha512 = "30a621a6d48a0175e8047c062e618523a85f69c45a7c31918da2b888f7527fce1aca67fa132552222725d0f6cdcaed95be7f16c28488d9468c0fad00cb7450b9"
+
+[messaging]
+url = "https://github.com/wasmCloud/messaging/archive/v0.2.0.tar.gz"
+sha256 = "41ada083aceb2b4ba92d9bd16d19b6462cc02b10378c9a49135c3447f9138a44"
+sha512 = "aa9c819dfd9e85b19661f6087ffd824c44fc38c8a4bc1005c4e7fd34fe844633c52cae7a0412e9ea90f71826e0660e8a3b5672a0f0303c524e4139643ae675ac"
+
+[orders]
+path = "../../../wit/orders"
+sha256 = "0d880accdb0a57caa456e30f7cbec756d870a716f1d179532a5c18c93eff43b9"
+sha512 = "745dd7d7106ee7cef051fb596de8ec70c4df6b67e9ee08125dcffd9f537a704dc9f693943fa9e0e57c62c19aabcf1b0cd938679963c1e230e81320f37e528b3f"
+
+[postgres]
+url = "https://github.com/vados-cosmonic/wit-wasmcloud-postgres/archive/main.tar.gz"
+sha256 = "dc180a915c3716a5f2f41ceee0d312baa75c9ae2b2fa429ad99ab5bced83e4b1"
+sha512 = "5954c6f59c804ae32d3c619f442273b749e60181c0154c50aba54c20a2d3dff4f31f714ee6c347cea053ac88101e63b8761c17b37ba88c0d9bc2209cbc132930"

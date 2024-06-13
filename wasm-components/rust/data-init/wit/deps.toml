@@ -1,0 +1,5 @@
+http = "https://github.com/WebAssembly/wasi-http/archive/v0.2.0.tar.gz"
+keyvalue = "https://github.com/WebAssembly/wasi-keyvalue/archive/main.tar.gz"
+logging = "https://github.com/WebAssembly/wasi-logging/archive/main.tar.gz"
+postgres = "https://github.com/vados-cosmonic/wit-wasmcloud-postgres/archive/main.tar.gz"
+data-init = "../../../wit/data-init"

@@ -1,0 +1,32 @@
+package platform-poc:orders@0.1.0;
+
+interface types {
+    record order {
+        order-number: string, // UUID
+        line-items: list<line-item>,
+        // amount in pennies
+        total: s32,
+    }
+
+    record line-item {
+        sku: string,
+        // amount in pennies
+        price: s32,
+        quantity: s32,
+    }
+
+    variant error {
+        internal(string),
+    }
+}
+
+/// Orders service interface allows querying and creating orders
+interface orders {
+    use types.{order, line-item, error};
+
+    /// Creates an `order` for specified lineitems
+    create-order: func(items: list<line-item>) -> result<_, error>;
+
+    /// Lists all orders
+    get-orders: func() -> result<list<order>, error>;
+}

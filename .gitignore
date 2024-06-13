@@ -4,3 +4,4 @@ target/
 keys/
 **/wit/deps/*
 sentinel
+*.creds

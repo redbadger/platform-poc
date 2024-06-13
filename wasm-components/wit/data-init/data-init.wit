@@ -1,0 +1,8 @@
+package platform-poc:data-init@0.1.0;
+
+interface init-funcs {
+  init-all: func() -> result<_, string>;
+  init-products: func() -> result<_, string>;
+  init-inventory: func() -> result<_, string>;
+  init-orders: func() -> result<_, string>;
+}

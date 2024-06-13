@@ -1,0 +1,19 @@
+package platform-poc:inventory@0.1.0;
+
+interface types {
+    record availability {
+        sku: string,
+        is-in-stock: bool,
+    }
+
+    variant error {
+        internal(string),
+    }
+}
+
+/// Inventory service interface provides access to the product catalog
+interface inventory {
+    use types.{error, availability};
+
+    get-inventory: func(skus: list<string>) -> result<list<availability>, error>;
+}
