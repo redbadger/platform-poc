@@ -1,5 +1,21 @@
 wit_bindgen::generate!({
-    world: "http-controller"
+    world: "platform-poc:http-controller/http-controller",
+    path: [
+        "../../wit/deps/io",
+        "../../wit/deps/random",
+        "../../wit/deps/clocks",
+        "../../wit/deps/filesystem",
+        "../../wit/deps/sockets",
+        "../../wit/deps/cli",
+        "../../wit/deps/http",
+        "../../wit/deps/logging",
+        "../../wit/inventory",
+        "../../wit/orders",
+        "../../wit/data-init",
+        "../../wit/products",
+        "wit",
+    ],
+    generate_all,
 });
 
 use anyhow::{anyhow, bail, Result};
@@ -14,7 +30,6 @@ use platform_poc::orders::orders::{
 };
 use platform_poc::products::products::{create_product, list_products, Product};
 use serde_json::json;
-use url::Url;
 use wasi::http::types::Method;
 use wasi::http::types::*;
 use wasi::io::streams::StreamError;
@@ -93,39 +108,47 @@ impl From<Order> for OrderData {
 
 impl Guest for HttpServer {
     fn handle(request: IncomingRequest, response_out: ResponseOutparam) {
-        let path = request.path_with_query().unwrap();
         let method = request.method();
+        let path_and_query = request.path_with_query().unwrap();
 
         log(
             Level::Info,
             "http-controller",
-            format!("Received {:?} request at {}", method, path).as_str(),
+            format!("Received {:?} request at {}", method, path_and_query).as_str(),
         );
 
-        let parsed_url = Url::parse(&format!("http://example.com{}", path))
-            .expect("HTTP-CONTROLLER-GUEST: Failed to parse URL");
-
-        let path_parts: Vec<&str> = parsed_url
-            .path_segments()
-            .map(|c| c.map(|c| c).collect())
-            .unwrap_or_else(Vec::new);
+        let (path_parts, query) = parse_path_and_query(&path_and_query);
 
         match path_parts.as_slice() {
             ["products", path_rest @ ..] => {
-                Routes::products(path_rest, parsed_url.query(), request, response_out)
+                Routes::products(path_rest, query, request, response_out)
             }
             ["data-init", path_rest @ ..] => {
-                Routes::data_init(path_rest, parsed_url.query(), request, response_out)
+                Routes::data_init(path_rest, query, request, response_out)
             }
             ["inventory", path_rest @ ..] => {
-                Routes::inventory(path_rest, parsed_url.query(), request, response_out)
+                Routes::inventory(path_rest, query, request, response_out)
             }
-            ["orders", path_rest @ ..] => {
-                Routes::orders(path_rest, parsed_url.query(), request, response_out)
-            }
+            ["orders", path_rest @ ..] => Routes::orders(path_rest, query, request, response_out),
             _ => response_out.complete_response(404, b"404 Not Found\n"),
         }
     }
+}
+
+fn parse_path_and_query(path: &str) -> (Vec<&str>, Option<&str>) {
+    let (path, query) = path.split_at(path.find('?').unwrap_or(path.len()));
+    let query: Option<&str> = if query.is_empty() {
+        None
+    } else {
+        Some(&query.trim_start_matches("?"))
+    };
+
+    let path_parts: Vec<&str> = path
+        .strip_prefix('/')
+        .map(|remainder| remainder.split('/'))
+        .map(|c| c.collect())
+        .unwrap_or_default();
+    (path_parts, query)
 }
 
 impl ResponseOutparam {
@@ -280,7 +303,7 @@ impl Routes {
         match method {
             Method::Get => {
                 let query_str = query.unwrap();
-                let mut query_pairs = url::form_urlencoded::parse(query_str.as_bytes());
+                let mut query_pairs = form_urlencoded::parse(query_str.as_bytes());
 
                 let skus_string = query_pairs.find(|(key, _)| key == "skus").unwrap().1;
 
@@ -357,3 +380,18 @@ impl Routes {
 }
 
 export!(HttpServer);
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_parse_path_and_query() {
+        let path = "/1/products?skus=sku1,sku2";
+
+        let (parts, query) = parse_path_and_query(path);
+
+        assert_eq!(parts, ["1", "products"]);
+        assert_eq!(query, Some("skus=sku1,sku2"));
+    }
+}

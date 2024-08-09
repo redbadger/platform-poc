@@ -1,5 +1,12 @@
 wit_bindgen::generate!({
-    world: "products-service",
+    world: "platform-poc:products-service/products-service",
+    path: [
+      "../../wit/products",
+      "../../wit/deps/logging",
+      "../../wit/deps/keyvalue",
+      "wit",
+    ],
+    generate_all,
 });
 
 use exports::platform_poc::products::products::Guest as ProductGuest;
@@ -43,8 +50,8 @@ impl ProductGuest for ProductComponent {
 
         let bucket = open("").expect("PRODUCTS-SERVICE-CREATE-PRODUCT: failed to open bucket");
 
-        let product_json =
-            serde_json::to_string(&product_data).expect("PRODUCTS-SERVICE-CREATE-PRODUCT: failed to convert product to json");
+        let product_json = serde_json::to_string(&product_data)
+            .expect("PRODUCTS-SERVICE-CREATE-PRODUCT: failed to convert product to json");
         bucket
             .set(product_data.sku.as_str(), product_json.as_bytes())
             .expect("PRODUCTS-SERVICE-CREATE-PRODUCT: failed to set product");
@@ -60,7 +67,9 @@ impl ProductGuest for ProductComponent {
         let mut product_keys = Vec::new();
         let mut cursor = None;
         loop {
-            let res = bucket.list_keys(cursor).expect("PRODUCTS-SERVICE-LIST-PRODUCTS: failed to list keys");
+            let res = bucket
+                .list_keys(cursor)
+                .expect("PRODUCTS-SERVICE-LIST-PRODUCTS: failed to list keys");
             product_keys.extend(res.keys);
             cursor = res.cursor;
             if cursor.is_none() {

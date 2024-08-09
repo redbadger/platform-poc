@@ -4,6 +4,6 @@ world di {
   import wasmcloud:postgres/query@0.1.0-draft;
   import wasi:keyvalue/store@0.2.0-draft;
   import wasi:logging/logging;
-  
+
   export platform-poc:data-init/init-funcs@0.1.0;
 }

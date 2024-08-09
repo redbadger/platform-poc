@@ -1,0 +1,11 @@
+[workspace]
+members = [
+    "common",
+    "data-init",
+    "http-controller",
+    "inventory-service",
+    "notification-service",
+    "orders-service",
+    "products-service",
+]
+resolver = "2"
