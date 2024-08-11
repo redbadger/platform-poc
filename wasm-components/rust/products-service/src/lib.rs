@@ -9,10 +9,11 @@ wit_bindgen::generate!({
     generate_all,
 });
 
-use exports::platform_poc::products::products::Guest as ProductGuest;
-use exports::platform_poc::products::products::{Error, Product};
-use wasi::keyvalue::store::open;
-use wasi::logging::logging::{log, Level};
+use exports::platform_poc::products::products::{Error, Guest as ProductGuest, Product};
+use wasi::{
+    keyvalue::store::open,
+    logging::logging::{log, Level},
+};
 
 use common::products::Product as ProductData;
 
@@ -30,14 +31,14 @@ impl From<Product> for ProductData {
     }
 }
 
-impl Into<Product> for ProductData {
-    fn into(self) -> Product {
+impl From<ProductData> for Product {
+    fn from(val: ProductData) -> Self {
         Product {
-            id: self.id,
-            name: self.name,
-            description: self.description,
-            price: self.price,
-            sku: self.sku,
+            id: val.id,
+            name: val.name,
+            description: val.description,
+            price: val.price,
+            sku: val.sku,
         }
     }
 }

@@ -19,21 +19,25 @@ wit_bindgen::generate!({
 });
 
 use anyhow::{anyhow, bail, Result};
-use common::inventory::Availability as AvailabilityData;
-use common::orders::{LineItem as LineItemData, Order as OrderData};
-use common::products::Product as ProductData;
-use exports::wasi::http::incoming_handler::Guest;
-use platform_poc::data_init::init_funcs::{init_all, init_inventory, init_orders, init_products};
-use platform_poc::inventory::inventory::{get_inventory, Availability};
-use platform_poc::orders::orders::{
-    create_order, get_orders, Error as OrderError, LineItem, Order,
-};
-use platform_poc::products::products::{create_product, list_products, Product};
 use serde_json::json;
-use wasi::http::types::Method;
-use wasi::http::types::*;
-use wasi::io::streams::StreamError;
-use wasi::logging::logging::{log, Level};
+
+use common::{
+    inventory::Availability as AvailabilityData,
+    orders::{LineItem as LineItemData, Order as OrderData},
+    products::Product as ProductData,
+};
+use exports::wasi::http::incoming_handler::Guest;
+use platform_poc::{
+    data_init::init_funcs::{init_all, init_inventory, init_orders, init_products},
+    inventory::inventory::{get_inventory, Availability},
+    orders::orders::{create_order, get_orders, Error as OrderError, LineItem, Order},
+    products::products::{create_product, list_products, Product},
+};
+use wasi::{
+    http::types::{Method, *},
+    io::streams::StreamError,
+    logging::logging::{log, Level},
+};
 
 const MAX_READ_BYTES: u32 = 2048;
 
@@ -140,7 +144,7 @@ fn parse_path_and_query(path: &str) -> (Vec<&str>, Option<&str>) {
     let query: Option<&str> = if query.is_empty() {
         None
     } else {
-        Some(&query.trim_start_matches("?"))
+        Some(query.trim_start_matches("?"))
     };
 
     let path_parts: Vec<&str> = path
@@ -288,7 +292,7 @@ impl Routes {
             return response_out.complete_response(404, b"404 Not Found\n");
         }
 
-        if let None = query {
+        if query.is_none() {
             return response_out.complete_response(400, b"400 Bad Request\n");
         }
 
@@ -356,10 +360,7 @@ impl Routes {
                 let line_item_data: Vec<common::orders::LineItem> =
                     serde_json::from_slice(&body).unwrap();
 
-                let line_items: Vec<LineItem> = line_item_data
-                    .iter()
-                    .map(|item| LineItem::from(item))
-                    .collect();
+                let line_items: Vec<LineItem> = line_item_data.iter().map(LineItem::from).collect();
 
                 let create_response = create_order(line_items.as_slice());
 

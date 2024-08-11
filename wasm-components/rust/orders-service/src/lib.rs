@@ -13,16 +13,22 @@ wit_bindgen::generate!({
 
 use std::collections::HashMap;
 
-use common::notification::OrderNotification;
-use common::NOTIFICATION_SUBJECT;
-use exports::platform_poc::orders::orders::Guest;
-use platform_poc::inventory::inventory::get_inventory;
-use platform_poc::orders::types::{Error, LineItem, Order};
 use uuid::Uuid;
+
+use common::{notification::OrderNotification, NOTIFICATION_SUBJECT};
+use exports::platform_poc::orders::orders::Guest;
+use platform_poc::{
+    inventory::inventory::get_inventory,
+    orders::types::{Error, LineItem, Order},
+};
 use wasi::logging::logging::{log, Level};
-use wasmcloud::messaging::consumer::{publish, BrokerMessage};
-use wasmcloud::postgres::query::{query, PgValue};
-use wasmcloud::postgres::types::ResultRowEntry;
+use wasmcloud::{
+    messaging::consumer::{publish, BrokerMessage},
+    postgres::{
+        query::{query, PgValue},
+        types::ResultRowEntry,
+    },
+};
 
 struct HttpServer;
 
@@ -152,7 +158,7 @@ impl Guest for HttpServer {
             JOIN orders.t_orders as "order" ON "order".id = "order_lines".order_id;"#;
 
         let rows =
-            query(&get_orders_query, &[]).expect("ORDER-SERVICE-GET-ORDERS: Failed to get orders");
+            query(get_orders_query, &[]).expect("ORDER-SERVICE-GET-ORDERS: Failed to get orders");
 
         let mut orders_map: HashMap<String, Order> = HashMap::new();
 
@@ -169,31 +175,31 @@ impl Guest for HttpServer {
                     ResultRowEntry {
                         column_name,
                         value: PgValue::Text(val),
-                    } if column_name == "order_number".to_string() => {
+                    } if column_name == *"order_number" => {
                         order_number = val;
                     }
                     ResultRowEntry {
                         column_name,
                         value: PgValue::Int4(val),
-                    } if column_name == "order_total".to_string() => {
+                    } if column_name == *"order_total" => {
                         order_total = val;
                     }
                     ResultRowEntry {
                         column_name,
                         value: PgValue::Text(val),
-                    } if column_name == "sku".to_string() => {
+                    } if column_name == *"sku" => {
                         sku = val;
                     }
                     ResultRowEntry {
                         column_name,
                         value: PgValue::Int4(val),
-                    } if column_name == "price".to_string() => {
+                    } if column_name == *"price" => {
                         price = val;
                     }
                     ResultRowEntry {
                         column_name,
                         value: PgValue::Int4(val),
-                    } if column_name == "quantity".to_string() => {
+                    } if column_name == *"quantity" => {
                         quantity = val;
                     }
                     _ => {}

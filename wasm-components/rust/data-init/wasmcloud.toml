@@ -1,8 +1,0 @@
-name = "data-init"
-version = "0.1.0"
-language = "rust"
-type = "component"
-
-[component]
-wit_world = "data-init"
-wasm_target = "wasm32-wasi-preview2"

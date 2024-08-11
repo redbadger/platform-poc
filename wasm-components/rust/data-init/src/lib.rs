@@ -10,11 +10,14 @@ wit_bindgen::generate!({
     generate_all,
 });
 
+use uuid::Uuid;
+
 use common::products::Product;
 use exports::platform_poc::data_init::init_funcs::Guest;
-use uuid::Uuid;
-use wasi::keyvalue::store::open;
-use wasi::logging::logging::{log, Level};
+use wasi::{
+    keyvalue::store::open,
+    logging::logging::{log, Level},
+};
 use wasmcloud::postgres::query::{query, PgValue};
 
 struct HttpServer;
