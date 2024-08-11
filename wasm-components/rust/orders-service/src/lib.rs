@@ -1,19 +1,34 @@
 wit_bindgen::generate!({
-    world: "orders-service"
+    world: "platform-poc:orders-service/orders-service",
+    path: [
+        "../../wit/deps/logging",
+        "../../wit/deps/postgres",
+        "../../wit/deps/messaging",
+        "../../wit/inventory",
+        "../../wit/orders",
+        "wit",
+    ],
+    generate_all,
 });
 
 use std::collections::HashMap;
 
-use exports::platform_poc::orders::orders::Guest;
-use platform_poc::inventory::inventory::get_inventory;
-use platform_poc::orders::types::{Error, LineItem, Order};
 use uuid::Uuid;
+
+use common::{notification::OrderNotification, NOTIFICATION_SUBJECT};
+use exports::platform_poc::orders::orders::Guest;
+use platform_poc::{
+    inventory::inventory::get_inventory,
+    orders::types::{Error, LineItem, Order},
+};
 use wasi::logging::logging::{log, Level};
-use wasmcloud::postgres::query::{query, PgValue};
-use wasmcloud::messaging::consumer::{publish, BrokerMessage};
-use wasmcloud::postgres::types::ResultRowEntry;
-use common::NOTIFICATION_SUBJECT;
-use common::notification::OrderNotification;
+use wasmcloud::{
+    messaging::consumer::{publish, BrokerMessage},
+    postgres::{
+        query::{query, PgValue},
+        types::ResultRowEntry,
+    },
+};
 
 struct HttpServer;
 
@@ -24,7 +39,8 @@ impl Guest for HttpServer {
 
         let skus: Vec<String> = items.iter().map(|item| item.sku.clone()).collect();
 
-        let availability = get_inventory(&skus).expect("ORDER-SERVICE-CREATE-ORDER: Failed to get inventory");
+        let availability =
+            get_inventory(&skus).expect("ORDER-SERVICE-CREATE-ORDER: Failed to get inventory");
 
         if availability.iter().all(|item| item.is_in_stock) {
             log(
@@ -46,7 +62,7 @@ impl Guest for HttpServer {
 
                 let id = query(
                     "-- Create line item
-                INSERT INTO orders.t_order_line_items (price, quantity, sku) 
+                INSERT INTO orders.t_order_line_items (price, quantity, sku)
                 VALUES ($1, $2, $3) RETURNING id;",
                     &params,
                 )
@@ -92,26 +108,29 @@ impl Guest for HttpServer {
             }
 
             // TODO: make sure no idle transactions are left hanging if things go wrong here (rollback)
-            query("COMMIT;", &[]).expect("ORDER-SERVICE-CREATE-ORDER: Failed to commit transaction");
+            query("COMMIT;", &[])
+                .expect("ORDER-SERVICE-CREATE-ORDER: Failed to commit transaction");
 
-            let notification = OrderNotification {
-                order_number,
-            };
+            let notification = OrderNotification { order_number };
 
-            let serialized: Vec<u8> = serde_json::to_vec(&notification).expect("Serialization failed");
+            let serialized: Vec<u8> =
+                serde_json::to_vec(&notification).expect("Serialization failed");
 
             let msg = BrokerMessage {
                 subject: NOTIFICATION_SUBJECT.to_string(),
                 reply_to: None,
-                body: serialized
+                body: serialized,
             };
-            
+
             let res = publish(&msg);
 
             if let Err(e) = res {
-                log(Level::Error, "orders-service", &format!("Failed to publish notification: {:?}", e));
+                log(
+                    Level::Error,
+                    "orders-service",
+                    &format!("Failed to publish notification: {:?}", e),
+                );
             }
-    
         } else {
             log(
                 Level::Info,
@@ -119,7 +138,7 @@ impl Guest for HttpServer {
                 "Product(s) not in stock, please try again later",
             );
 
-            return Err(Error::Internal("Product(s) not in stock".to_string()))
+            return Err(Error::Internal("Product(s) not in stock".to_string()));
         }
         Ok(())
     }
@@ -138,7 +157,8 @@ impl Guest for HttpServer {
             JOIN orders.t_orders_order_line_items_list as order_lines ON "order_lines".order_line_items_list_id = "line_items".id
             JOIN orders.t_orders as "order" ON "order".id = "order_lines".order_id;"#;
 
-        let rows = query(&get_orders_query, &[]).expect("ORDER-SERVICE-GET-ORDERS: Failed to get orders");
+        let rows =
+            query(get_orders_query, &[]).expect("ORDER-SERVICE-GET-ORDERS: Failed to get orders");
 
         let mut orders_map: HashMap<String, Order> = HashMap::new();
 
@@ -155,31 +175,31 @@ impl Guest for HttpServer {
                     ResultRowEntry {
                         column_name,
                         value: PgValue::Text(val),
-                    } if column_name == "order_number".to_string() => {
+                    } if column_name == *"order_number" => {
                         order_number = val;
                     }
                     ResultRowEntry {
                         column_name,
                         value: PgValue::Int4(val),
-                    } if column_name == "order_total".to_string() => {
+                    } if column_name == *"order_total" => {
                         order_total = val;
                     }
                     ResultRowEntry {
                         column_name,
                         value: PgValue::Text(val),
-                    } if column_name == "sku".to_string() => {
+                    } if column_name == *"sku" => {
                         sku = val;
                     }
                     ResultRowEntry {
                         column_name,
                         value: PgValue::Int4(val),
-                    } if column_name == "price".to_string() => {
+                    } if column_name == *"price" => {
                         price = val;
                     }
                     ResultRowEntry {
                         column_name,
                         value: PgValue::Int4(val),
-                    } if column_name == "quantity".to_string() => {
+                    } if column_name == *"quantity" => {
                         quantity = val;
                     }
                     _ => {}

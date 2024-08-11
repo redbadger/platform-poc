@@ -1,5 +1,11 @@
 wit_bindgen::generate!({
-    world: "notification-service",
+    world: "platform-poc:notification-service/notification-service",
+    path: [
+        "../../wit/deps/logging",
+        "../../wit/deps/messaging",
+        "wit",
+    ],
+    generate_all,
 });
 
 use common::notification::OrderNotification;
@@ -31,9 +37,9 @@ macro_rules! loud_print {
             format!(
                 "\n
 ****************************************************************************
-********************** 
+**********************
 ********************** Received order number {}
-********************** 
+**********************
 ****************************************************************************\n\n",
                 $text
             )

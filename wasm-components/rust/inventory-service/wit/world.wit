@@ -1,8 +1,8 @@
 package platform-poc:inventory-service;
 
 world inventory-service {
-  export platform-poc:inventory/inventory@0.1.0;
-  
   import wasmcloud:postgres/query@0.1.0-draft;
   import wasi:logging/logging;
+
+  export platform-poc:inventory/inventory@0.1.0;
 }

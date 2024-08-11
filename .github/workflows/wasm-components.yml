@@ -1,0 +1,60 @@
+name: Build and test WebAssembly components
+on:
+  push:
+    branches:
+      - "main"
+    paths:
+      - "wasm-components/**"
+
+  pull_request:
+    branches:
+      - "main"
+    paths:
+      - "wasm-components/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and test
+    runs-on: ubuntu-latest
+    if: |
+      ${{ github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name !=
+      github.event.pull_request.base.repo.full_name }}
+
+    defaults:
+      run:
+        working-directory: wasm-components
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          targets: wasm32-wasip2
+          components: rustfmt
+
+      - name: Build
+        shell: bash
+        working-directory: wasm-components/rust
+        run: |
+          cargo fmt --all --check
+          cargo build --workspace
+
+      - name: Install nextest
+        shell: bash
+        run: |
+          set -euxo pipefail
+          curl -LsSf https://get.nexte.st/0.9/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
+
+      - name: Run tests
+        shell: bash
+        working-directory: wasm-components/rust
+        run: |
+          rm .cargo/config.toml # so we don't attempt to execute wasm directly
+          cargo nextest run --all-features

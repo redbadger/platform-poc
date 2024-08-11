@@ -1,12 +1,23 @@
 wit_bindgen::generate!({
-    world: "di"
+    world: "platform-poc:di/di",
+    path: [
+        "../../wit/data-init",
+        "../../wit/deps/postgres",
+        "../../wit/deps/keyvalue",
+        "../../wit/deps/logging",
+        "wit",
+    ],
+    generate_all,
 });
+
+use uuid::Uuid;
 
 use common::products::Product;
 use exports::platform_poc::data_init::init_funcs::Guest;
-use uuid::Uuid;
-use wasi::keyvalue::store::open;
-use wasi::logging::logging::{log, Level};
+use wasi::{
+    keyvalue::store::open,
+    logging::logging::{log, Level},
+};
 use wasmcloud::postgres::query::{query, PgValue};
 
 struct HttpServer;
@@ -22,12 +33,11 @@ impl Guest for HttpServer {
     fn init_products() -> Result<(), String> {
         let bucket = open("").expect("DATA-INIT-PRODUCTS: failed to open bucket");
         for product in sample_products() {
-            let product_json =
-                serde_json::to_string(&product).expect("DATA-INIT-PRODUCTS: failed to convert product to json");
+            let product_json = serde_json::to_string(&product)
+                .expect("DATA-INIT-PRODUCTS: failed to convert product to json");
             bucket
                 .set(product.sku.as_str(), product_json.as_bytes())
                 .expect("DATA-INIT-PRODUCTS: failed to set product");
-
         }
         log(Level::Info, "data-init", "Products initialized!");
         Ok(())
@@ -82,7 +92,8 @@ impl Guest for HttpServer {
     }
 
     fn init_orders() -> Result<(), String> {
-        query("CREATE SCHEMA IF NOT EXISTS orders;", &[]).expect("DATA-INIT-ORDERS: failed to create orders schema");
+        query("CREATE SCHEMA IF NOT EXISTS orders;", &[])
+            .expect("DATA-INIT-ORDERS: failed to create orders schema");
 
         query(
             "-- Table: orders.t_orders
