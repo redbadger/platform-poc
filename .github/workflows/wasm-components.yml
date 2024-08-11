@@ -56,4 +56,5 @@ jobs:
         shell: bash
         working-directory: wasm-components/rust
         run: |
+          rm .cargo/config.toml # so we don't attempt to execute wasm directly
           cargo nextest run --all-features
