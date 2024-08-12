@@ -1,8 +1,8 @@
 wit_bindgen::generate!({
     world: "platform-poc:notification-service/notification-service",
     path: [
-        "../../wit/deps/logging",
-        "../../wit/deps/messaging",
+        "../../wit/deps/wasi/logging",
+        "../../wit/deps/wasmcloud/messaging",
         "wit",
     ],
     generate_all,
@@ -12,9 +12,9 @@ use common::notification::OrderNotification;
 use exports::wasmcloud::messaging::handler::{BrokerMessage, Guest};
 use wasi::logging::logging::{log, Level};
 
-struct HttpServer;
+struct Component;
 
-impl Guest for HttpServer {
+impl Guest for Component {
     #[doc = r" Callback handled to invoke a function when a message is received from a subscription"]
     fn handle_message(msg: BrokerMessage) -> Result<(), String> {
         let body = msg.body;
@@ -26,7 +26,7 @@ impl Guest for HttpServer {
     }
 }
 
-export!(HttpServer);
+export!(Component);
 
 #[macro_export]
 macro_rules! loud_print {

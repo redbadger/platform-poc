@@ -1,8 +1,8 @@
 wit_bindgen::generate!({
     world: "platform-poc:inventory-service/inventory-service",
     path: [
-        "../../wit/deps/postgres",
-        "../../wit/deps/logging",
+        "../../wit/deps/wasmcloud/postgres",
+        "../../wit/deps/wasi/logging",
         "../../wit/inventory",
         "wit",
     ],
@@ -18,7 +18,7 @@ use wasmcloud::postgres::types::ResultRowEntry;
 
 use wasi::logging::logging::{log, Level};
 
-struct HttpServer;
+struct Component;
 
 impl From<AvailabilityData> for Availability {
     fn from(val: AvailabilityData) -> Self {
@@ -29,7 +29,7 @@ impl From<AvailabilityData> for Availability {
     }
 }
 
-impl Guest for HttpServer {
+impl Guest for Component {
     fn get_inventory(skus: Vec<String>) -> Result<Vec<Availability>, Error> {
         log(Level::Info, "inventory-service", "Getting inventory...");
 
@@ -78,4 +78,4 @@ impl Guest for HttpServer {
     }
 }
 
-export!(HttpServer);
+export!(Component);

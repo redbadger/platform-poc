@@ -1,9 +1,9 @@
 wit_bindgen::generate!({
     world: "platform-poc:orders-service/orders-service",
     path: [
-        "../../wit/deps/logging",
-        "../../wit/deps/postgres",
-        "../../wit/deps/messaging",
+        "../../wit/deps/wasi/logging",
+        "../../wit/deps/wasmcloud/postgres",
+        "../../wit/deps/wasmcloud/messaging",
         "../../wit/inventory",
         "../../wit/orders",
         "wit",
@@ -30,9 +30,9 @@ use wasmcloud::{
     },
 };
 
-struct HttpServer;
+struct Component;
 
-impl Guest for HttpServer {
+impl Guest for Component {
     #[doc = r" Creates an `order` for specified line items"]
     fn create_order(items: Vec<LineItem>) -> Result<(), Error> {
         log(Level::Info, "orders-service", "Order request received...");
@@ -232,4 +232,4 @@ impl Guest for HttpServer {
     }
 }
 
-export!(HttpServer);
+export!(Component);

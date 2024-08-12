@@ -1,12 +1,12 @@
 package platform-poc:http-controller;
 
 world http-controller {
+  import wasi:logging/logging;
+
   import platform-poc:products/products@0.1.0;
   import platform-poc:data-init/init-funcs@0.1.0;
   import platform-poc:inventory/inventory@0.1.0;
   import platform-poc:orders/orders@0.1.0;
-
-  import wasi:logging/logging;
 
   export wasi:http/incoming-handler@0.2.0;
 }

@@ -1,14 +1,14 @@
 wit_bindgen::generate!({
     world: "platform-poc:http-controller/http-controller",
     path: [
-        "../../wit/deps/io",
-        "../../wit/deps/random",
-        "../../wit/deps/clocks",
-        "../../wit/deps/filesystem",
-        "../../wit/deps/sockets",
-        "../../wit/deps/cli",
-        "../../wit/deps/http",
-        "../../wit/deps/logging",
+        "../../wit/deps/wasi/io",
+        "../../wit/deps/wasi/random",
+        "../../wit/deps/wasi/clocks",
+        "../../wit/deps/wasi/filesystem",
+        "../../wit/deps/wasi/sockets",
+        "../../wit/deps/wasi/cli",
+        "../../wit/deps/wasi/http",
+        "../../wit/deps/wasi/logging",
         "../../wit/inventory",
         "../../wit/orders",
         "../../wit/data-init",
@@ -41,7 +41,7 @@ use wasi::{
 
 const MAX_READ_BYTES: u32 = 2048;
 
-struct HttpServer;
+struct Component;
 
 impl From<Product> for ProductData {
     fn from(product: Product) -> Self {
@@ -110,7 +110,7 @@ impl From<Order> for OrderData {
     }
 }
 
-impl Guest for HttpServer {
+impl Guest for Component {
     fn handle(request: IncomingRequest, response_out: ResponseOutparam) {
         let method = request.method();
         let path_and_query = request.path_with_query().unwrap();
@@ -380,7 +380,7 @@ impl Routes {
     }
 }
 
-export!(HttpServer);
+export!(Component);
 
 #[cfg(test)]
 mod test {
