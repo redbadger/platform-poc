@@ -7,11 +7,11 @@ metadata:
     description: "TODO: Add a description for the application"
 spec:
   components:
-#################### COMPONENTS ####################
+    #################### COMPONENTS ####################
     - name: data-init
       type: component
       properties:
-        image: file://../wasm-components/rust/data-init/build/data_init_s.wasm
+        image: file://signed/data_init_s.wasm
         id: data-init
       traits:
         - type: spreadscaler
@@ -25,6 +25,13 @@ spec:
             interfaces: [query]
             target_config:
               - name: default-pg
+                properties:
+                  POSTGRES_HOST: localhost
+                  POSTGRES_PORT: "5432"
+                  POSTGRES_USERNAME: postgres
+                  POSTGRES_PASSWORD: postgres
+                  POSTGRES_TLS_REQUIRED: "false"
+                  POSTGRES_DATABASE: postgres
         - type: link
           properties:
             target: kvredis
@@ -33,11 +40,13 @@ spec:
             interfaces: [store]
             target_config:
               - name: default-redis
+                properties:
+                  url: "redis://127.0.0.1:6379"
 
     - name: http-controller
       type: component
       properties:
-        image: file://../wasm-components/rust/http-controller/build/http_controller_s.wasm
+        image: file://signed/http_controller_s.wasm
         id: http-controller
       traits:
         - type: spreadscaler
@@ -71,7 +80,7 @@ spec:
     - name: products-service
       type: component
       properties:
-        image: file://../wasm-components/rust/products-service/build/products_service_s.wasm
+        image: file://signed/products_service_s.wasm
         id: products-service
       traits:
         - type: spreadscaler
@@ -89,7 +98,7 @@ spec:
     - name: inventory-service
       type: component
       properties:
-        image: file://../wasm-components/rust/inventory-service/build/inventory_service_s.wasm
+        image: file://signed/inventory_service_s.wasm
         id: inventory-service
       traits:
         - type: spreadscaler
@@ -107,7 +116,7 @@ spec:
     - name: notification-service
       type: component
       properties:
-        image: file://../wasm-components/rust/notification-service/build/notification_service_s.wasm
+        image: file://signed/notification_service_s.wasm
         id: notification-service
       traits:
         - type: spreadscaler
@@ -117,7 +126,7 @@ spec:
     - name: orders-service
       type: component
       properties:
-        image: file://../wasm-components/rust/orders-service/build/orders_service_s.wasm
+        image: file://signed/orders_service_s.wasm
         id: orders-service
       traits:
         - type: spreadscaler
@@ -144,7 +153,7 @@ spec:
             package: messaging
             interfaces: [consumer]
 
-#################### CAPABILITIES ####################
+    #################### CAPABILITIES ####################
 
     - name: httpserver
       type: capability
@@ -160,6 +169,8 @@ spec:
             interfaces: [incoming-handler]
             source_config:
               - name: default-http
+                properties:
+                  address: "127.0.0.1:8080"
 
     - name: kvredis
       type: capability
@@ -187,3 +198,5 @@ spec:
             interfaces: [handler]
             source_config:
               - name: default-nats
+                properties:
+                  subscriptions: "platform-poc.order-notification"
