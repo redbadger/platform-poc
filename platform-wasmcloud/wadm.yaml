@@ -24,14 +24,7 @@ spec:
             package: postgres
             interfaces: [query]
             target_config:
-              - name: default-pg
-                properties:
-                  POSTGRES_HOST: localhost
-                  POSTGRES_PORT: "5432"
-                  POSTGRES_USERNAME: postgres
-                  POSTGRES_PASSWORD: postgres
-                  POSTGRES_TLS_REQUIRED: "false"
-                  POSTGRES_DATABASE: postgres
+              - name: online_store_poc-default_pg
         - type: link
           properties:
             target: kvredis
@@ -39,9 +32,7 @@ spec:
             package: keyvalue
             interfaces: [store]
             target_config:
-              - name: default-redis
-                properties:
-                  url: "redis://127.0.0.1:6379"
+              - name: online_store_poc-default_redis
 
     - name: http-controller
       type: component
@@ -93,7 +84,7 @@ spec:
             package: keyvalue
             interfaces: [store]
             target_config:
-              - name: default-redis
+              - name: online_store_poc-default_redis
 
     - name: inventory-service
       type: component
@@ -111,7 +102,7 @@ spec:
             package: postgres
             interfaces: [query]
             target_config:
-              - name: default-pg
+              - name: online_store_poc-default_pg
 
     - name: notification-service
       type: component
@@ -139,7 +130,7 @@ spec:
             package: postgres
             interfaces: [query]
             target_config:
-              - name: default-pg
+              - name: online_store_poc-default_pg
         - type: link
           properties:
             target: inventory-service
@@ -160,6 +151,10 @@ spec:
       properties:
         image: ghcr.io/wasmcloud/http-server:0.20.1
         id: http-server
+        config:
+          - name: default-http
+            properties:
+              address: "127.0.0.1:8080"
       traits:
         - type: link
           properties:
@@ -168,27 +163,40 @@ spec:
             package: http
             interfaces: [incoming-handler]
             source_config:
-              - name: default-http
-                properties:
-                  address: "127.0.0.1:8080"
+              - name: online_store_poc-default_http
 
     - name: kvredis
       type: capability
       properties:
         image: ghcr.io/wasmcloud/keyvalue-redis:0.24.0
         id: kv-redis
+        config:
+          - name: default-redis
+            properties:
+              url: "redis://127.0.0.1:6379"
 
     - name: sqldb-postgres
       type: capability
       properties:
         image: ghcr.io/wasmcloud/sqldb-postgres:0.1.0
         id: sql-postgres
+        config:
+          - name: default-pg
+            properties:
+              POSTGRES_HOST: localhost
+              POSTGRES_PORT: "5432"
+              POSTGRES_USERNAME: postgres
+              POSTGRES_PASSWORD: postgres
+              POSTGRES_TLS_REQUIRED: "false"
+              POSTGRES_DATABASE: postgres
 
     - name: nats
       type: capability
       properties:
         image: ghcr.io/wasmcloud/messaging-nats:0.20.0
         id: nats
+        config:
+          - name: default-nats
       traits:
         - type: link
           properties:
