@@ -27,7 +27,7 @@ spec:
               - name: online_store_poc-default_pg
         - type: link
           properties:
-            target: kvredis
+            target: kv-redis
             namespace: wasi
             package: keyvalue
             interfaces: [store]
@@ -42,7 +42,7 @@ spec:
       traits:
         - type: spreadscaler
           properties:
-            replicas: 1
+            replicas: 2
         - type: link
           properties:
             target: products-service
@@ -76,10 +76,10 @@ spec:
       traits:
         - type: spreadscaler
           properties:
-            replicas: 1
+            replicas: 2
         - type: link
           properties:
-            target: kvredis
+            target: kv-redis
             namespace: wasi
             package: keyvalue
             interfaces: [store]
@@ -94,7 +94,7 @@ spec:
       traits:
         - type: spreadscaler
           properties:
-            replicas: 1
+            replicas: 2
         - type: link
           properties:
             target: sqldb-postgres
@@ -112,7 +112,7 @@ spec:
       traits:
         - type: spreadscaler
           properties:
-            replicas: 1
+            replicas: 2
 
     - name: orders-service
       type: component
@@ -122,7 +122,7 @@ spec:
       traits:
         - type: spreadscaler
           properties:
-            replicas: 1
+            replicas: 2
         - type: link
           properties:
             target: sqldb-postgres
@@ -146,26 +146,25 @@ spec:
 
     #################### CAPABILITIES ####################
 
-    - name: httpserver
+    - name: http-server
       type: capability
       properties:
         image: ghcr.io/wasmcloud/http-server:0.20.1
         id: http-server
-        config:
-          - name: default-http
-            properties:
-              address: "127.0.0.1:8080"
       traits:
         - type: link
           properties:
+            name: http-server
             target: http-controller
             namespace: wasi
             package: http
             interfaces: [incoming-handler]
             source_config:
-              - name: online_store_poc-default_http
+              - name: default-http
+                properties:
+                  port: "8080"
 
-    - name: kvredis
+    - name: kv-redis
       type: capability
       properties:
         image: ghcr.io/wasmcloud/keyvalue-redis:0.24.0
@@ -179,7 +178,7 @@ spec:
       type: capability
       properties:
         image: ghcr.io/wasmcloud/sqldb-postgres:0.1.0
-        id: sql-postgres
+        id: sqldb-postgres
         config:
           - name: default-pg
             properties:
@@ -195,8 +194,6 @@ spec:
       properties:
         image: ghcr.io/wasmcloud/messaging-nats:0.20.0
         id: nats
-        config:
-          - name: default-nats
       traits:
         - type: link
           properties:

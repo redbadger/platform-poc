@@ -12,17 +12,22 @@ const MAX_READ_BYTES: u32 = 2048;
 
 impl ResponseOutparam {
     pub fn complete_response(self, status_code: StatusCode, body: &[u8]) {
-        let response = OutgoingResponse::new(Fields::new());
-        response.set_status_code(status_code).unwrap();
-        let response_body = response.body().unwrap();
-        ResponseOutparam::set(self, Ok(response));
-        response_body
-            .write()
-            .unwrap()
-            .blocking_write_and_flush(body)
-            .unwrap();
-        OutgoingBody::finish(response_body, None)
+        let headers = Fields::new();
+        let response = OutgoingResponse::new(headers);
+        response
+            .set_status_code(status_code)
+            .expect("setting status code");
+
+        let outgoing_body = response.body().expect("outgoing response");
+
+        let out = outgoing_body.write().expect("outgoing stream");
+        out.blocking_write_and_flush(body)
+            .expect("writing response");
+        drop(out);
+
+        OutgoingBody::finish(outgoing_body, None)
             .expect("HTTP-CONTROLLER-RESPONSE: failed to finish response body");
+        ResponseOutparam::set(self, Ok(response));
     }
 }
 

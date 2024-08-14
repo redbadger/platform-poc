@@ -45,46 +45,49 @@ export!(Component);
 impl Guest for Component {
     fn handle(request: IncomingRequest, response_out: ResponseOutparam) {
         let method = request.method();
-        let path_and_query = request.path_with_query().unwrap();
+        let (path_parts, query) = request.parts();
 
         log(
             Level::Info,
             "http-controller",
-            format!("Received {:?} request at {}", method, path_and_query).as_str(),
+            format!(
+                "Received {:?} request at {:?}?{:?}",
+                method, path_parts, query
+            )
+            .as_str(),
         );
 
-        let (path_parts, query) = parse_path_and_query(&path_and_query);
-
-        match path_parts.as_slice() {
+        match path_parts
+            .iter()
+            .map(|s| s.as_ref())
+            .collect::<Vec<&str>>()
+            .as_slice()
+        {
             ["products", path_parts @ ..] => {
-                Routes::products(path_parts, query, request, response_out)
+                Routes::products(path_parts, query.as_deref(), request, response_out)
             }
             ["data-init", path_parts @ ..] => {
-                Routes::data_init(path_parts, query, request, response_out)
+                Routes::data_init(path_parts, query.as_deref(), request, response_out)
             }
             ["inventory", path_parts @ ..] => {
-                Routes::inventory(path_parts, query, request, response_out)
+                Routes::inventory(path_parts, query.as_deref(), request, response_out)
             }
-            ["orders", path_parts @ ..] => Routes::orders(path_parts, query, request, response_out),
+            ["orders", path_parts @ ..] => {
+                Routes::orders(path_parts, query.as_deref(), request, response_out)
+            }
             _ => response_out.complete_response(404, b"404 Not Found\n"),
         }
+
+        log(
+            Level::Info,
+            "http-controller",
+            format!(
+                "Completed {:?} request at {:?}?{:?}",
+                method, path_parts, query
+            )
+            .as_str(),
+        );
     }
-}
-
-fn parse_path_and_query(path: &str) -> (Vec<&str>, Option<&str>) {
-    let (path, query) = path.split_at(path.find('?').unwrap_or(path.len()));
-    let query: Option<&str> = if query.is_empty() {
-        None
-    } else {
-        Some(query.trim_start_matches("?"))
-    };
-
-    let path_parts: Vec<&str> = path
-        .strip_prefix('/')
-        .map(|remainder| remainder.split('/'))
-        .map(|c| c.collect())
-        .unwrap_or_default();
-    (path_parts, query)
 }
 
 struct Routes;
