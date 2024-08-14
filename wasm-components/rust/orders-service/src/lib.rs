@@ -11,6 +11,7 @@ wit_bindgen::generate!({
     generate_all,
 });
 
+use indoc::indoc;
 use std::collections::HashMap;
 
 use uuid::Uuid;
@@ -35,7 +36,11 @@ struct Component;
 impl Guest for Component {
     #[doc = r" Creates an `order` for specified line items"]
     fn create_order(items: Vec<LineItem>) -> Result<(), Error> {
-        log(Level::Info, "orders-service", "Order request received...");
+        log(
+            Level::Info,
+            "orders-service",
+            &format!("Order request received: {:?}", items),
+        );
 
         let skus: Vec<String> = items.iter().map(|item| item.sku.clone()).collect();
 
@@ -61,9 +66,11 @@ impl Guest for Component {
                 ];
 
                 let id = query(
-                    "-- Create line item
-                INSERT INTO orders.t_order_line_items (price, quantity, sku)
-                VALUES ($1, $2, $3) RETURNING id;",
+                    indoc! {"
+                        -- Create order line item
+                        INSERT INTO orders.t_order_line_items (price, quantity, sku)
+                        VALUES ($1, $2, $3) RETURNING id;
+                    "},
                     &params,
                 )
                 .expect("ORDER-SERVICE-CREATE-ORDER: Failed to insert order line item");
@@ -80,9 +87,11 @@ impl Guest for Component {
             let order_number = Uuid::new_v4().to_string();
 
             let pg_response = query(
-                "-- Create order entry
-            INSERT INTO orders.t_orders (order_number, total)
-            VALUES ($1, $2) RETURNING id",
+                indoc! {"
+                    -- Create order entry
+                    INSERT INTO orders.t_orders (order_number, total)
+                    VALUES ($1, $2) RETURNING id;
+                "},
                 &[
                     PgValue::Text(order_number.clone()),
                     PgValue::Integer(*total),
@@ -100,9 +109,11 @@ impl Guest for Component {
 
             for id in ids {
                 query(
-                    "-- Link order and line items
-                    INSERT INTO orders.t_orders_order_line_items_list (order_id, order_line_items_list_id)
-                    VALUES ($1, $2);",
+                    indoc! {"
+                        -- Link order and line items
+                        INSERT INTO orders.t_orders_order_line_items_list (order_id, order_line_items_list_id)
+                        VALUES ($1, $2);
+                    "},
                     &[PgValue::BigInt(order_id.parse().unwrap()), PgValue::BigInt(id.parse().unwrap())],
                 ).expect("ORDER-SERVICE-CREATE-ORDER: Failed to link order and line items");
             }
@@ -145,7 +156,7 @@ impl Guest for Component {
 
     #[doc = r" Lists all orders"]
     fn get_orders() -> Result<Vec<Order>, Error> {
-        let get_orders_query = r#"
+        let get_orders_query = indoc! {r#"
         SELECT
             "order".order_number,
             "order".total as order_total,
@@ -155,7 +166,8 @@ impl Guest for Component {
         FROM
             orders.t_order_line_items as line_items
             JOIN orders.t_orders_order_line_items_list as order_lines ON "order_lines".order_line_items_list_id = "line_items".id
-            JOIN orders.t_orders as "order" ON "order".id = "order_lines".order_id;"#;
+            JOIN orders.t_orders as "order" ON "order".id = "order_lines".order_id;
+        "#};
 
         let rows =
             query(get_orders_query, &[]).expect("ORDER-SERVICE-GET-ORDERS: Failed to get orders");
