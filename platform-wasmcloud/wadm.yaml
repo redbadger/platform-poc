@@ -16,7 +16,7 @@ spec:
       traits:
         - type: spreadscaler
           properties:
-            replicas: 1
+            instances: 1
         - type: link
           properties:
             target: sqldb-postgres
@@ -42,7 +42,7 @@ spec:
       traits:
         - type: spreadscaler
           properties:
-            replicas: 2
+            instances: 20
         - type: link
           properties:
             target: products-service
@@ -76,7 +76,7 @@ spec:
       traits:
         - type: spreadscaler
           properties:
-            replicas: 2
+            instances: 10
         - type: link
           properties:
             target: kv-redis
@@ -94,7 +94,7 @@ spec:
       traits:
         - type: spreadscaler
           properties:
-            replicas: 2
+            instances: 10
         - type: link
           properties:
             target: sqldb-postgres
@@ -112,7 +112,7 @@ spec:
       traits:
         - type: spreadscaler
           properties:
-            replicas: 2
+            instances: 10
 
     - name: orders-service
       type: component
@@ -122,7 +122,7 @@ spec:
       traits:
         - type: spreadscaler
           properties:
-            replicas: 2
+            instances: 10
         - type: link
           properties:
             target: sqldb-postgres
@@ -149,7 +149,7 @@ spec:
     - name: http-server
       type: capability
       properties:
-        image: ghcr.io/wasmcloud/http-server:0.20.1
+        image: ghcr.io/wasmcloud/http-server:0.22.0
         id: http-server
       traits:
         - type: link
@@ -167,7 +167,7 @@ spec:
     - name: kv-redis
       type: capability
       properties:
-        image: ghcr.io/wasmcloud/keyvalue-redis:0.24.0
+        image: ghcr.io/wasmcloud/keyvalue-redis:0.27.0
         id: kv-redis
         config:
           - name: default-redis
@@ -177,7 +177,7 @@ spec:
     - name: sqldb-postgres
       type: capability
       properties:
-        image: ghcr.io/wasmcloud/sqldb-postgres:0.1.0
+        image: ghcr.io/wasmcloud/sqldb-postgres:0.3.0
         id: sqldb-postgres
         config:
           - name: default-pg
@@ -192,7 +192,7 @@ spec:
     - name: nats
       type: capability
       properties:
-        image: ghcr.io/wasmcloud/messaging-nats:0.20.0
+        image: ghcr.io/wasmcloud/messaging-nats:0.22.0
         id: nats
       traits:
         - type: link

@@ -45,16 +45,13 @@ export!(Component);
 impl Guest for Component {
     fn handle(request: IncomingRequest, response_out: ResponseOutparam) {
         let method = request.method();
+        let path_and_query = request.path_with_query().unwrap();
         let (path_parts, query) = request.parts();
 
         log(
             Level::Info,
             "http-controller",
-            format!(
-                "Received {:?} request at {:?}?{:?}",
-                method, path_parts, query
-            )
-            .as_str(),
+            format!("Received {:?} request at {}", method, path_and_query).as_str(),
         );
 
         match path_parts
@@ -81,11 +78,7 @@ impl Guest for Component {
         log(
             Level::Info,
             "http-controller",
-            format!(
-                "Completed {:?} request at {:?}?{:?}",
-                method, path_parts, query
-            )
-            .as_str(),
+            format!("Completed {:?} request at {}", method, path_and_query).as_str(),
         );
     }
 }
