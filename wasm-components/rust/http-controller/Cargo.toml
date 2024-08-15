@@ -10,6 +10,7 @@ crate-type = ["cdylib"]
 anyhow = "1.0.40"
 common = { path = "../common" }
 form_urlencoded = "1.2.1"
+routefinder = "0.5.4"
 serde.workspace = true
 serde_json.workspace = true
 wit-bindgen.workspace = true

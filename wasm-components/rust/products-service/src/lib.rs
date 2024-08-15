@@ -2,8 +2,8 @@ wit_bindgen::generate!({
     world: "platform-poc:products-service/products-service",
     path: [
       "../../wit/products",
-      "../../wit/deps/logging",
-      "../../wit/deps/keyvalue",
+      "../../wit/deps/wasi/keyvalue",
+      "../../wit/deps/wasi/logging",
       "wit",
     ],
     generate_all,

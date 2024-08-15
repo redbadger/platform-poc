@@ -2,9 +2,9 @@ wit_bindgen::generate!({
     world: "platform-poc:di/di",
     path: [
         "../../wit/data-init",
-        "../../wit/deps/postgres",
-        "../../wit/deps/keyvalue",
-        "../../wit/deps/logging",
+        "../../wit/deps/wasmcloud/postgres",
+        "../../wit/deps/wasi/keyvalue",
+        "../../wit/deps/wasi/logging",
         "wit",
     ],
     generate_all,
@@ -20,13 +20,13 @@ use wasi::{
 };
 use wasmcloud::postgres::query::{query, PgValue};
 
-struct HttpServer;
+struct Component;
 
-impl Guest for HttpServer {
+impl Guest for Component {
     fn init_all() -> Result<(), String> {
-        HttpServer::init_products().expect("DATA-INIT-ALL: failed to initialize products");
-        HttpServer::init_inventory().expect("DATA-INIT-ALL: failed to initialize inventory");
-        HttpServer::init_orders().expect("DATA-INIT-ALL: failed to initialize orders");
+        Component::init_products().expect("DATA-INIT-ALL: failed to initialize products");
+        Component::init_inventory().expect("DATA-INIT-ALL: failed to initialize inventory");
+        Component::init_orders().expect("DATA-INIT-ALL: failed to initialize orders");
         Ok(())
     }
 
@@ -242,4 +242,4 @@ fn sample_products() -> Vec<Product> {
     ]
 }
 
-export!(HttpServer);
+export!(Component);

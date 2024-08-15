@@ -7,16 +7,16 @@ metadata:
     description: "TODO: Add a description for the application"
 spec:
   components:
-#################### COMPONENTS ####################
+    #################### COMPONENTS ####################
     - name: data-init
       type: component
       properties:
-        image: file://../wasm-components/rust/data-init/build/data_init_s.wasm
+        image: file://signed/data_init_s.wasm
         id: data-init
       traits:
         - type: spreadscaler
           properties:
-            replicas: 1
+            instances: 1
         - type: link
           properties:
             target: sqldb-postgres
@@ -24,25 +24,25 @@ spec:
             package: postgres
             interfaces: [query]
             target_config:
-              - name: default-pg
+              - name: online_store_poc-default_pg
         - type: link
           properties:
-            target: kvredis
+            target: kv-redis
             namespace: wasi
             package: keyvalue
             interfaces: [store]
             target_config:
-              - name: default-redis
+              - name: online_store_poc-default_redis
 
     - name: http-controller
       type: component
       properties:
-        image: file://../wasm-components/rust/http-controller/build/http_controller_s.wasm
+        image: file://signed/http_controller_s.wasm
         id: http-controller
       traits:
         - type: spreadscaler
           properties:
-            replicas: 1
+            instances: 20
         - type: link
           properties:
             target: products-service
@@ -71,30 +71,30 @@ spec:
     - name: products-service
       type: component
       properties:
-        image: file://../wasm-components/rust/products-service/build/products_service_s.wasm
+        image: file://signed/products_service_s.wasm
         id: products-service
       traits:
         - type: spreadscaler
           properties:
-            replicas: 1
+            instances: 10
         - type: link
           properties:
-            target: kvredis
+            target: kv-redis
             namespace: wasi
             package: keyvalue
             interfaces: [store]
             target_config:
-              - name: default-redis
+              - name: online_store_poc-default_redis
 
     - name: inventory-service
       type: component
       properties:
-        image: file://../wasm-components/rust/inventory-service/build/inventory_service_s.wasm
+        image: file://signed/inventory_service_s.wasm
         id: inventory-service
       traits:
         - type: spreadscaler
           properties:
-            replicas: 1
+            instances: 10
         - type: link
           properties:
             target: sqldb-postgres
@@ -102,27 +102,27 @@ spec:
             package: postgres
             interfaces: [query]
             target_config:
-              - name: default-pg
+              - name: online_store_poc-default_pg
 
     - name: notification-service
       type: component
       properties:
-        image: file://../wasm-components/rust/notification-service/build/notification_service_s.wasm
+        image: file://signed/notification_service_s.wasm
         id: notification-service
       traits:
         - type: spreadscaler
           properties:
-            replicas: 1
+            instances: 10
 
     - name: orders-service
       type: component
       properties:
-        image: file://../wasm-components/rust/orders-service/build/orders_service_s.wasm
+        image: file://signed/orders_service_s.wasm
         id: orders-service
       traits:
         - type: spreadscaler
           properties:
-            replicas: 1
+            instances: 10
         - type: link
           properties:
             target: sqldb-postgres
@@ -130,7 +130,7 @@ spec:
             package: postgres
             interfaces: [query]
             target_config:
-              - name: default-pg
+              - name: online_store_poc-default_pg
         - type: link
           properties:
             target: inventory-service
@@ -144,39 +144,58 @@ spec:
             package: messaging
             interfaces: [consumer]
 
-#################### CAPABILITIES ####################
+    #################### CAPABILITIES ####################
 
-    - name: httpserver
+    - name: http-server
       type: capability
       properties:
-        image: ghcr.io/wasmcloud/http-server:0.20.1
+        image: ghcr.io/wasmcloud/http-server:0.22.0
         id: http-server
       traits:
         - type: link
           properties:
+            name: http-server
             target: http-controller
             namespace: wasi
             package: http
             interfaces: [incoming-handler]
             source_config:
               - name: default-http
+                properties:
+                  port: "8080"
 
-    - name: kvredis
+    - name: kv-redis
       type: capability
       properties:
-        image: ghcr.io/wasmcloud/keyvalue-redis:0.24.0
+        image: ghcr.io/wasmcloud/keyvalue-redis:0.27.0
         id: kv-redis
+        config:
+          - name: default-redis
+            properties:
+              url: "redis://127.0.0.1:6379"
 
     - name: sqldb-postgres
       type: capability
       properties:
-        image: ghcr.io/wasmcloud/sqldb-postgres:0.1.0
-        id: sql-postgres
+        image: ghcr.io/wasmcloud/sqldb-postgres:0.2.0
+        # this one also works ...
+        # image: ghcr.io/wasmcloud/sqldb-postgres:877830d
+        # but 0.3.0 is broken. Have pinged Victor Adossi at Cosmonic in slack
+        id: sqldb-postgres
+        config:
+          - name: default-pg
+            properties:
+              POSTGRES_HOST: localhost
+              POSTGRES_PORT: "5432"
+              POSTGRES_USERNAME: postgres
+              POSTGRES_PASSWORD: postgres
+              POSTGRES_TLS_REQUIRED: "false"
+              POSTGRES_DATABASE: postgres
 
     - name: nats
       type: capability
       properties:
-        image: ghcr.io/wasmcloud/messaging-nats:0.20.0
+        image: ghcr.io/wasmcloud/messaging-nats:0.22.0
         id: nats
       traits:
         - type: link
@@ -187,3 +206,5 @@ spec:
             interfaces: [handler]
             source_config:
               - name: default-nats
+                properties:
+                  subscriptions: "platform-poc.order-notification"
