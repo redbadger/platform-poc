@@ -111,8 +111,6 @@ enum Handlers {
     Products,
 }
 
-// TODO: improve error handling everywhere
-// TODO: refactor this into less of a mess
 impl Handlers {
     fn products(request: IncomingRequest) -> Result<(StatusCode, String)> {
         match request.method() {
