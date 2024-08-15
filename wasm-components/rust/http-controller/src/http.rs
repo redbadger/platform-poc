@@ -32,10 +32,6 @@ impl ResponseOutparam {
 }
 
 impl IncomingRequest {
-    pub fn parts(&self) -> (Vec<String>, Option<String>) {
-        parse_path_and_query(self.path_with_query().unwrap())
-    }
-
     pub fn read_body(self) -> Result<Vec<u8>> {
         let incoming_req_body = self
             .consume()
@@ -58,22 +54,15 @@ impl IncomingRequest {
     }
 }
 
-fn parse_path_and_query(path_and_query: String) -> (Vec<String>, Option<String>) {
+pub fn path_and_query(path_with_query: &str) -> (&str, Option<&str>) {
     let (path, query) =
-        path_and_query.split_at(path_and_query.find('?').unwrap_or(path_and_query.len()));
+        path_with_query.split_at(path_with_query.find('?').unwrap_or(path_with_query.len()));
     let query = if query.is_empty() {
         None
     } else {
-        Some(query.trim_start_matches("?").to_string())
+        Some(query.trim_start_matches("?"))
     };
-
-    let path_parts: Vec<String> = path
-        .strip_prefix('/')
-        .map(|remainder| remainder.split('/'))
-        .map(|c| c.map(|s| s.to_string()).collect())
-        .unwrap_or_default();
-
-    (path_parts, query)
+    (path, query)
 }
 
 #[cfg(test)]
@@ -82,11 +71,11 @@ mod test {
 
     #[test]
     fn test_parse_path_and_query() {
-        let path = "/1/products?skus=sku1,sku2";
-
-        let (parts, query) = parse_path_and_query(path.to_string());
-
-        assert_eq!(parts, ["1", "products"]);
-        assert_eq!(query, Some("skus=sku1,sku2".to_string()));
+        assert_eq!(
+            path_and_query("/1/products?skus=sku1,sku2"),
+            ("/1/products", Some("skus=sku1,sku2"))
+        );
+        assert_eq!(path_and_query("/products"), ("/products", None));
+        assert_eq!(path_and_query(""), ("", None));
     }
 }

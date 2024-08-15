@@ -18,6 +18,8 @@ wit_bindgen::generate!({
     generate_all,
 });
 
+use anyhow::{anyhow, Result};
+use routefinder::Router;
 use serde_json::json;
 
 use common::{
@@ -44,227 +46,212 @@ export!(Component);
 
 impl Guest for Component {
     fn handle(request: IncomingRequest, response_out: ResponseOutparam) {
-        let method = request.method();
-        let path_and_query = request.path_with_query().unwrap();
-        let (path_parts, query) = request.parts();
-
-        log(
-            Level::Info,
-            "http-controller",
-            format!("Received {:?} request at {}", method, path_and_query).as_str(),
-        );
-
-        match path_parts
-            .iter()
-            .map(|s| s.as_ref())
-            .collect::<Vec<&str>>()
-            .as_slice()
-        {
-            ["products", path_parts @ ..] => {
-                Routes::products(path_parts, query.as_deref(), request, response_out)
+        match handle(request) {
+            Ok((status_code, body)) => {
+                response_out.complete_response(status_code, body.as_bytes());
             }
-            ["data-init", path_parts @ ..] => {
-                Routes::data_init(path_parts, query.as_deref(), request, response_out)
+            Err(e) => {
+                log(
+                    Level::Error,
+                    "http-controller",
+                    format!("Error: {:?}", e).as_str(),
+                );
+                response_out.complete_response(500, b"Internal Server Error");
             }
-            ["inventory", path_parts @ ..] => {
-                Routes::inventory(path_parts, query.as_deref(), request, response_out)
-            }
-            ["orders", path_parts @ ..] => {
-                Routes::orders(path_parts, query.as_deref(), request, response_out)
-            }
-            _ => response_out.complete_response(404, b"404 Not Found\n"),
-        }
-
-        log(
-            Level::Info,
-            "http-controller",
-            format!("Completed {:?} request at {}", method, path_and_query).as_str(),
-        );
+        };
     }
 }
 
-struct Routes;
+fn handle(request: IncomingRequest) -> Result<(StatusCode, String)> {
+    let method = request.method();
+    let path_with_query = request.path_with_query().unwrap_or_default();
+    let (path, query) = http::path_and_query(&path_with_query);
+
+    log(
+        Level::Info,
+        "http-controller",
+        format!("Received {:?} request at {}", method, path_with_query).as_str(),
+    );
+
+    let mut router = Router::new();
+
+    router
+        .add("/data-init/:action", Handlers::DataInit)
+        .map_err(|e| anyhow!("adding route: {}", e))?;
+    router
+        .add("/inventory/*", Handlers::Inventory)
+        .map_err(|e| anyhow!("adding route: {}", e))?;
+    router
+        .add("/orders", Handlers::Orders)
+        .map_err(|e| anyhow!("adding route: {}", e))?;
+    router
+        .add("/products", Handlers::Products)
+        .map_err(|e| anyhow!("adding route: {}", e))?;
+
+    let Some(m) = router.best_match(path) else {
+        return Ok((404, "404 Not Found\n".to_string()));
+    };
+
+    match m.handler() {
+        Handlers::DataInit => {
+            let captures = m.captures();
+            let action = captures.get("action").unwrap_or_default();
+            Handlers::data_init(action, request)
+        }
+        Handlers::Inventory => Handlers::inventory(query, request),
+        Handlers::Orders => Handlers::orders(request),
+        Handlers::Products => Handlers::products(request),
+    }
+}
+
+enum Handlers {
+    DataInit,
+    Inventory,
+    Orders,
+    Products,
+}
 
 // TODO: improve error handling everywhere
 // TODO: refactor this into less of a mess
-impl Routes {
-    fn products(
-        path_parts: &[&str],
-        _query: Option<&str>,
-        request: IncomingRequest,
-        response_out: ResponseOutparam,
-    ) {
-        let method = request.method();
-
-        if !path_parts.is_empty() {
-            return response_out.complete_response(404, b"404 Not Found\n");
-        }
-
-        match method {
+impl Handlers {
+    fn products(request: IncomingRequest) -> Result<(StatusCode, String)> {
+        match request.method() {
             Method::Get => {
-                let products =
-                    list_products().expect("HTTP-CONTROLLER-PRODUCTS-GET: failed to list products");
+                let products = list_products().map_err(|e| {
+                    anyhow!("HTTP-CONTROLLER-PRODUCTS-GET: failed to list products: {e}")
+                })?;
                 let product_data = products
                     .iter()
                     .map(|product| ProductData::from(product.clone()))
                     .collect::<Vec<ProductData>>();
-                let products_json = json!(product_data).to_string();
-
-                response_out.complete_response(200, products_json.as_bytes());
+                Ok((200, json!(product_data).to_string()))
             }
             Method::Post => {
-                let body = request
-                    .read_body()
-                    .expect("HTTP-CONTROLLER-PRODUCTS-POST: failed to read body");
-                let product: Product = serde_json::from_slice::<ProductData>(&body).unwrap().into();
-                create_product(&product)
-                    .expect("HTTP-CONTROLLER-PRODUCTS-POST: failed to create product");
-                response_out.complete_response(201, "Created".as_bytes());
+                let body = request.read_body().map_err(|e| {
+                    anyhow!("HTTP-CONTROLLER-PRODUCTS-POST: failed to read body: {e}")
+                })?;
+                let Ok(data) = serde_json::from_slice::<ProductData>(&body) else {
+                    return Ok((400, "400 Bad Request\n".to_string()));
+                };
+                let product: Product = data.into();
+                create_product(&product).map_err(|e| {
+                    anyhow!("HTTP-CONTROLLER-PRODUCTS-POST: failed to create product: {e}")
+                })?;
+                Ok((201, "201 Created\n".to_string()))
             }
-            _ => response_out.complete_response(405, b"405 Method Not Allowed\n"),
+            _ => Ok((405, "405 Method Not Allowed\n".to_string())),
         }
     }
 
-    fn data_init(
-        path_parts: &[&str],
-        _query: Option<&str>,
-        request: IncomingRequest,
-        response_out: ResponseOutparam,
-    ) {
-        let method = request.method();
-
-        if path_parts.len() > 1 {
-            return response_out.complete_response(404, b"404 Not Found\n");
-        }
-
-        match method {
-            Method::Get => match path_parts {
-                ["all"] => {
-                    init_all()
-                        .expect("HTTP-CONTROLLER-DATA-INIT-ALL failed to initialize products");
-                    response_out.complete_response(
+    fn data_init(action: &str, request: IncomingRequest) -> Result<(StatusCode, String)> {
+        match request.method() {
+            Method::Get => match action {
+                "all" => {
+                    init_all().map_err(|e| {
+                        anyhow!("HTTP-CONTROLLER-DATA-INIT-ALL failed to initialize products: {e}")
+                    })?;
+                    Ok((
                         200,
-                        "Products, inventory and orders schema initialized".as_bytes(),
-                    )
+                        "Products, inventory and orders schema initialized\n".to_string(),
+                    ))
                 }
-                ["products"] => {
-                    init_products().expect(
-                        "HTTP-CONTROLLER-DATA-INIT-PRODUCTS: failed to initialize products",
-                    );
-                    response_out.complete_response(200, "Products initialized".as_bytes())
+                "products" => {
+                    init_products().map_err(|e| {
+                        anyhow!(
+                        "HTTP-CONTROLLER-DATA-INIT-PRODUCTS: failed to initialize products: {e}")
+                    })?;
+                    Ok((200, "Products initialized\n".to_string()))
                 }
-                ["inventory"] => {
-                    init_inventory().expect(
-                        "HTTP-CONTROLLER-DATA-INIT-INVENTORY: failed to initialize inventory",
-                    );
-                    response_out.complete_response(200, "Inventory initialized".as_bytes())
+                "inventory" => {
+                    init_inventory().map_err(|e| {
+                        anyhow!("HTTP-CONTROLLER-DATA-INIT-INVENTORY: failed to initialize inventory: {e}")
+                    })?;
+                    Ok((200, "Inventory initialized\n".to_string()))
                 }
-                ["orders"] => {
-                    init_orders().expect(
-                        "HTTP-CONTROLLER-DATA-INIT-ORDERS: failed to initialize orders schema",
-                    );
-                    response_out.complete_response(200, "Orders schema initialized".as_bytes())
+                "orders" => {
+                    init_orders().map_err(|e| {
+                        anyhow!("HTTP-CONTROLLER-DATA-INIT-ORDERS: failed to initialize orders schema: {e}")
+                    })?;
+                    Ok((200, "Orders schema initialized\n".to_string()))
                 }
-                _ => response_out.complete_response(404, b"404 Not Found\n"),
+                _ => Ok((404, "404 Not Found\n".to_string())),
             },
-            _ => response_out.complete_response(405, b"405 Method Not Allowed\n"),
+            _ => Ok((405, "405 Method Not Allowed\n".to_string())),
         }
     }
 
-    fn inventory(
-        path_parts: &[&str],
-        query: Option<&str>,
-        request: IncomingRequest,
-        response_out: ResponseOutparam,
-    ) {
-        if !path_parts.is_empty() {
-            return response_out.complete_response(404, b"404 Not Found\n");
-        }
-
+    fn inventory(query: Option<&str>, request: IncomingRequest) -> Result<(StatusCode, String)> {
         if query.is_none() {
-            return response_out.complete_response(400, b"400 Bad Request\n");
+            return Ok((400, "400 Bad Request\n".to_string()));
         }
 
         if let Some(value) = query {
             if !value.contains("skus=") {
-                return response_out.complete_response(400, b"400 Bad Request\n");
+                return Ok((400, "400 Bad Request\n".to_string()));
             }
         }
 
-        let method = request.method();
-
-        match method {
+        match request.method() {
             Method::Get => {
-                let query_str = query.unwrap();
+                let query_str = query.unwrap_or_default();
                 let mut query_pairs = form_urlencoded::parse(query_str.as_bytes());
 
-                let skus_string = query_pairs.find(|(key, _)| key == "skus").unwrap().1;
+                let skus_string = query_pairs
+                    .find(|(key, _)| key == "skus")
+                    .map(|(_, v)| v.to_string())
+                    .unwrap_or_default();
 
                 let skus_list: Vec<String> =
                     skus_string.split(',').map(|s| s.to_string()).collect();
 
-                let inventory = get_inventory(skus_list.as_slice())
-                    .expect("HTTP-CONTROLLER-INVENTORY-GET: failed to fetch inventory");
+                let inventory = get_inventory(skus_list.as_slice()).map_err(|e| {
+                    anyhow!("HTTP-CONTROLLER-INVENTORY-GET: failed to fetch inventory: {e}")
+                })?;
                 let inventory_data: Vec<AvailabilityData> = inventory
                     .iter()
                     .map(|entry| AvailabilityData::from(entry.clone()))
                     .collect();
 
-                let inventory_json = json!(inventory_data).to_string();
-
-                response_out.complete_response(200, inventory_json.as_bytes())
+                Ok((200, json!(inventory_data).to_string()))
             }
-            _ => response_out.complete_response(405, b"405 Method Not Allowed\n"),
+            _ => Ok((405, "405 Method Not Allowed\n".to_string())),
         }
     }
 
-    fn orders(
-        path_parts: &[&str],
-        _query: Option<&str>,
-        request: IncomingRequest,
-        response_out: ResponseOutparam,
-    ) {
-        if !path_parts.is_empty() {
-            return response_out.complete_response(404, b"404 Not Found\n");
-        }
-
-        let method = request.method();
-
-        match method {
+    fn orders(request: IncomingRequest) -> Result<(StatusCode, String)> {
+        match request.method() {
             Method::Get => {
-                let orders =
-                    get_orders().expect("HTTP-CONTROLLER-ORDERS-GET: failed to get orders");
+                let orders = get_orders().map_err(|e| {
+                    anyhow!("HTTP-CONTROLLER-ORDERS-GET: failed to get orders: {e}")
+                })?;
                 let order_data: Vec<OrderData> = orders
                     .iter()
                     .map(|order| OrderData::from(order.clone()))
                     .collect();
-                let orders_json = json!(order_data).to_string();
-
-                response_out.complete_response(200, orders_json.as_bytes())
+                Ok((200, json!(order_data).to_string()))
             }
             Method::Post => {
-                let body = request
-                    .read_body()
-                    .expect("HTTP-CONTROLLER-ORDERS-POST: failed to read body");
-                let line_item_data: Vec<common::orders::LineItem> =
-                    serde_json::from_slice(&body).unwrap();
+                let body = request.read_body().map_err(|e| {
+                    anyhow!("HTTP-CONTROLLER-ORDERS-POST: failed to read body: {e}")
+                })?;
+                let Ok(data) = serde_json::from_slice::<Vec<common::orders::LineItem>>(&body)
+                else {
+                    return Ok((400, "400 Bad Request\n".to_string()));
+                };
 
-                let line_items: Vec<LineItem> = line_item_data.iter().map(LineItem::from).collect();
+                let line_items: Vec<LineItem> = data.iter().map(LineItem::from).collect();
 
                 let create_response = create_order(line_items.as_slice());
 
                 match create_response {
-                    Ok(_) => response_out.complete_response(201, "Created".as_bytes()),
+                    Ok(_) => Ok((201, "201 Created\n".to_string())),
                     Err(e) => {
                         let OrderError::Internal(msg) = e;
-                        response_out.complete_response(
-                            500,
-                            format!("Unable to place order: {}", msg).as_bytes(),
-                        )
+                        Ok((500, format!("Unable to place order: {}\n", msg)))
                     }
                 }
             }
-            _ => response_out.complete_response(405, b"405 Method Not Allowed\n"),
+            _ => Ok((405, "405 Method Not Allowed\n".to_string())),
         }
     }
 }
