@@ -79,7 +79,7 @@ fn handle(request: IncomingRequest) -> Result<(StatusCode, String)> {
         .add("/data-init/:action", Handlers::DataInit)
         .map_err(|e| anyhow!("adding route: {}", e))?;
     router
-        .add("/inventory/*", Handlers::Inventory)
+        .add("/inventory", Handlers::Inventory)
         .map_err(|e| anyhow!("adding route: {}", e))?;
     router
         .add("/orders", Handlers::Orders)
