@@ -53,32 +53,27 @@ impl Guest for Component {
                 "orders-service",
                 "All requested products are in stock",
             );
-            query("BEGIN;", &[]).expect("ORDER-SERVICE-CREATE-ORDER: Failed to begin transaction");
 
-            let mut ids: Vec<String> = vec![];
-
-            // create line items
-            for item in &items {
-                let params = vec![
-                    PgValue::Integer(item.price),
-                    PgValue::Integer(item.quantity),
-                    PgValue::Text(item.sku.clone()),
-                ];
-
-                let id = query(
-                    indoc! {"
-                        -- Create order line item
-                        INSERT INTO orders.t_order_line_items (price, quantity, sku)
-                        VALUES ($1, $2, $3) RETURNING id;
-                    "},
-                    &params,
+            let mut sql = String::from(indoc! {r#"
+                WITH order_id AS (
+                   	INSERT INTO orders.t_orders (order_number, total)
+                   	VALUES ($1, $2) RETURNING id
+                ), item_ids AS (
+                   	INSERT INTO orders.t_order_line_items (price, quantity, sku)
+                   	VALUES $3 RETURNING id
+                ), joins AS (
+                   	SELECT order_id.id as order_id, item_ids.id as item_id FROM order_id, item_ids
                 )
-                .expect("ORDER-SERVICE-CREATE-ORDER: Failed to insert order line item");
+                INSERT INTO orders.t_orders_order_line_items_list (order_id, order_line_items_list_id)
+                (SELECT order_id, item_id FROM joins);
+            "#});
 
-                if let PgValue::Int8(id) = id[0][0].value {
-                    ids.push(id.to_string());
-                }
+            let mut value_strings = vec![];
+            for item in &items {
+                value_strings.push(format!("({},{},'{}')", item.price, item.quantity, item.sku));
             }
+
+            sql = sql.replace("$3", &value_strings.join(","));
 
             let total = &items
                 .iter()
@@ -86,41 +81,18 @@ impl Guest for Component {
 
             let order_number = Uuid::new_v4().to_string();
 
-            let pg_response = query(
-                indoc! {"
-                    -- Create order entry
-                    INSERT INTO orders.t_orders (order_number, total)
-                    VALUES ($1, $2) RETURNING id;
-                "},
+            query(
+                &sql,
                 &[
                     PgValue::Text(order_number.clone()),
                     PgValue::Integer(*total),
                 ],
             )
-            .expect("ORDER-SERVICE-CREATE-ORDER: Failed to insert order");
-
-            let order_id: String;
-
-            if let PgValue::Int8(id) = pg_response[0][0].value {
-                order_id = id.to_string();
-            } else {
-                panic!("RDER-SERVICE-CREATE-ORDER: Failed to get order id");
-            }
-
-            for id in ids {
-                query(
-                    indoc! {"
-                        -- Link order and line items
-                        INSERT INTO orders.t_orders_order_line_items_list (order_id, order_line_items_list_id)
-                        VALUES ($1, $2);
-                    "},
-                    &[PgValue::BigInt(order_id.parse().unwrap()), PgValue::BigInt(id.parse().unwrap())],
-                ).expect("ORDER-SERVICE-CREATE-ORDER: Failed to link order and line items");
-            }
-
-            // TODO: make sure no idle transactions are left hanging if things go wrong here (rollback)
-            query("COMMIT;", &[])
-                .expect("ORDER-SERVICE-CREATE-ORDER: Failed to commit transaction");
+            .map_err(|e| {
+                let msg = format!("Failed to insert order: {:?}", e);
+                log(Level::Error, "orders-service", &msg);
+                Error::Internal(msg)
+            })?;
 
             let notification = OrderNotification { order_number };
 
