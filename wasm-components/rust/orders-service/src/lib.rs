@@ -138,7 +138,8 @@ impl Guest for Component {
         FROM
             orders.t_order_line_items as line_items
             JOIN orders.t_orders_order_line_items_list as order_lines ON "order_lines".order_line_items_list_id = "line_items".id
-            JOIN orders.t_orders as "order" ON "order".id = "order_lines".order_id;
+            JOIN orders.t_orders as "order" ON "order".id = "order_lines".order_id
+        LIMIT 10;
         "#};
 
         let rows =
