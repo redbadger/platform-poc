@@ -14,7 +14,7 @@ wash --version
 run
 
 ```bash
-wash up -d
+./up.fish
 ```
 
 ### Build and sign the components
@@ -26,10 +26,22 @@ wash up -d
 ### Deploy the components with `wadm`
 
 ```bash
-./up.fish
+./start.fish
+```
+
+### Redeploy the components with `wadm`
+
+```bash
+./restart.fish
 ```
 
 ### Delete the application with `wadm`
+
+```bash
+./stop.fish
+```
+
+### Stop the wasmCloud host
 
 ```bash
 ./down.fish
