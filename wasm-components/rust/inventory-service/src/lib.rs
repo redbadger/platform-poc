@@ -37,7 +37,7 @@ impl Guest for Component {
 
         for sku in skus {
             let sql_result = query(
-                "SELECT sku, quantity FROM inventory.t_inventory WHERE sku = $1",
+                "SELECT sku, quantity FROM inventory.t_inventory WHERE sku = $1;",
                 &[PgValue::Text(sku)],
             )
             .expect("INVENTORY-SERVICE-GET-INVENTORY: failed to query inventory");
