@@ -177,10 +177,7 @@ spec:
     - name: sqldb-postgres
       type: capability
       properties:
-        image: ghcr.io/wasmcloud/sqldb-postgres:0.2.0
-        # this one also works ...
-        # image: ghcr.io/wasmcloud/sqldb-postgres:877830d
-        # but 0.3.0 is broken. Have pinged Victor Adossi at Cosmonic in slack
+        image: ghcr.io/wasmcloud/sqldb-postgres:0.5.0
         id: sqldb-postgres
         config:
           - name: default-pg
