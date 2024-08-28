@@ -13,7 +13,9 @@ application.
    - in Spin on VMs — to be added
    - in Spin on Kubernetes, with SpinKube — to be added
 
-> [!CAUTION] This PoC is intended to represent a small "enterprise-like"
+<!-- prettier-ignore -->
+> [!CAUTION]
+> This PoC is intended to represent a small "enterprise-like"
 > microservices application for demonstration only — it has some small "business
 > logic" services, a KV Store, a SQL DB and a message broker. It is not intended
 > to be a good example of such an application, and there has been no attention
