@@ -1,4 +1,10 @@
-### Deploy to local wasmCloud
+## wasmCloud
+
+_Wasm components linked at runtime (via wRPC) and running in wasmCloud._
+
+![deployed to wasmCloud](./platform-poc.webp)
+
+### Deploy locally
 
 ## Setup
 

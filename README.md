@@ -1,12 +1,12 @@
-# Platform POC
+# Platform Proof of Concept
 
-Comparison of different deployment architectures for a small microservices
-application.
+_Comparison of different deployment architectures for a small microservices
+application._
 
 1. Java Spring Boot, Containers, Kubernetes
    [example](./java-containers-k8s/README.md)
 1. Rust, Containers, Kubernetes [example](./rust-containers-k8s/README.md)
-1. Rust, WebAssembly (Wasm) Components
+1. Rust, WebAssembly (Wasm) Components [example](./wasm-components/README.md)
    - in wasmCloud on VMs [example](./platform-wasmcloud/README.md)
    - in wasmCloud on Kubernetes, with the wasmCloud Operator
      [example](./platform-wasmcloud/README.md)
@@ -24,4 +24,4 @@ application.
 This diagram shows the application services as Wasm components running in
 wasmCloud:
 
-![Platform POC](./platform-poc.webp)
+![Platform POC](./platform-wasmcloud/platform-poc.webp)
