@@ -17,33 +17,29 @@ struct Component;
 impl Guest for Component {
     #[doc = r" Callback handled to invoke a function when a message is received from a subscription"]
     fn handle_message(msg: BrokerMessage) -> Result<(), String> {
-        let body = msg.body;
-        let order_notification: OrderNotification = serde_json::from_slice(&body)
-                                    .expect("NOTIFICATION-SERVICE-HANDLE-MESSAGE: Unable to Failed to deserialize order notification");
-        crate::loud_print!(order_notification.order_number);
+        let notification: OrderNotification = serde_json::from_slice(&msg.body).expect(
+            "NOTIFICATION-SERVICE-HANDLE-MESSAGE: failed to deserialize order notification",
+        );
+
+        loud_print("recieved order number", &notification.order_number);
 
         Ok(())
     }
 }
 
-export!(Component);
-
-#[macro_export]
-macro_rules! loud_print {
-    ($text:expr) => {
-        log(
-            Level::Info,
-            "notification-service",
-            format!(
-                "\n
+fn loud_print(msg: &str, data: &str) {
+    log(
+        Level::Info,
+        "notification-service",
+        &format!(
+            "\n
 ****************************************************************************
 **********************
-********************** Received order number {}
+********************** {msg} {data}
 **********************
 ****************************************************************************\n\n",
-                $text
-            )
-            .as_str(),
-        );
-    };
+        ),
+    );
 }
+
+export!(Component);

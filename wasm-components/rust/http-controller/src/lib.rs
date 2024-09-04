@@ -51,11 +51,7 @@ impl Guest for Component {
                 response_out.complete_response(status_code, body.as_bytes());
             }
             Err(e) => {
-                log(
-                    Level::Error,
-                    "http-controller",
-                    format!("Error: {:?}", e).as_str(),
-                );
+                log(Level::Error, "http-controller", &format!("Error: {:?}", e));
                 response_out.complete_response(500, b"Internal Server Error");
             }
         };
@@ -70,7 +66,7 @@ fn handle(request: IncomingRequest) -> Result<(StatusCode, String)> {
     log(
         Level::Info,
         "http-controller",
-        format!("Received {:?} request at {}", method, path_with_query).as_str(),
+        &format!("Received {:?} request at {}", method, path_with_query),
     );
 
     let mut router = Router::new();
@@ -202,7 +198,7 @@ impl Handlers {
                 let skus_list: Vec<String> =
                     skus_string.split(',').map(|s| s.to_string()).collect();
 
-                let inventory = get_inventory(skus_list.as_slice()).map_err(|e| {
+                let inventory = get_inventory(&skus_list).map_err(|e| {
                     anyhow!("HTTP-CONTROLLER-INVENTORY-GET: failed to fetch inventory: {e}")
                 })?;
                 let inventory_data: Vec<AvailabilityData> = inventory
@@ -239,7 +235,7 @@ impl Handlers {
 
                 let line_items: Vec<LineItem> = data.iter().map(LineItem::from).collect();
 
-                let create_response = create_order(line_items.as_slice());
+                let create_response = create_order(&line_items);
 
                 match create_response {
                     Ok(_) => Ok((201, "201 Created\n".to_string())),

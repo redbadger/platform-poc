@@ -76,7 +76,7 @@ spec:
       traits:
         - type: spreadscaler
           properties:
-            instances: 10
+            instances: 20
         - type: link
           properties:
             target: kv-redis
@@ -94,7 +94,7 @@ spec:
       traits:
         - type: spreadscaler
           properties:
-            instances: 10
+            instances: 20
         - type: link
           properties:
             target: sqldb-postgres
@@ -112,7 +112,7 @@ spec:
       traits:
         - type: spreadscaler
           properties:
-            instances: 10
+            instances: 20
 
     - name: orders-service
       type: component
@@ -122,7 +122,7 @@ spec:
       traits:
         - type: spreadscaler
           properties:
-            instances: 10
+            instances: 20
         - type: link
           properties:
             target: sqldb-postgres

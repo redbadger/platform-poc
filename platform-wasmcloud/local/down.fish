@@ -17,3 +17,5 @@ function stop
 end
 
 stop wash-ui
+brew services stop redis
+brew services stop postgresql@15

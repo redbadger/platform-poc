@@ -11,9 +11,9 @@ wit_bindgen::generate!({
     generate_all,
 });
 
-use indoc::indoc;
 use std::collections::HashMap;
 
+use indoc::indoc;
 use uuid::Uuid;
 
 use common::{notification::OrderNotification, NOTIFICATION_SUBJECT};
@@ -68,14 +68,14 @@ impl Guest for Component {
                 (SELECT order_id, item_id FROM joins);
             "#});
 
-            let mut value_strings = vec![];
-            for item in &items {
-                value_strings.push(format!("({},{},'{}')", item.price, item.quantity, item.sku));
-            }
+            let values = items
+                .iter()
+                .map(|item| format!("({},{},'{}')", item.price, item.quantity, item.sku))
+                .collect::<Vec<_>>()
+                .join(",");
+            sql = sql.replace("$3", &values);
 
-            sql = sql.replace("$3", &value_strings.join(","));
-
-            let total = &items
+            let total = items
                 .iter()
                 .fold(0, |acc, item| acc + item.price * item.quantity);
 
@@ -83,10 +83,7 @@ impl Guest for Component {
 
             query(
                 &sql,
-                &[
-                    PgValue::Text(order_number.clone()),
-                    PgValue::Integer(*total),
-                ],
+                &[PgValue::Text(order_number.clone()), PgValue::Integer(total)],
             )
             .map_err(|e| {
                 let msg = format!("Failed to insert order: {:?}", e);
@@ -96,18 +93,15 @@ impl Guest for Component {
 
             let notification = OrderNotification { order_number };
 
-            let serialized: Vec<u8> =
-                serde_json::to_vec(&notification).expect("Serialization failed");
-
             let msg = BrokerMessage {
                 subject: NOTIFICATION_SUBJECT.to_string(),
                 reply_to: None,
-                body: serialized,
+                body: serde_json::to_vec(&notification).expect("serialization failed"),
             };
 
-            let res = publish(&msg);
+            let result = publish(&msg);
 
-            if let Err(e) = res {
+            if let Err(e) = result {
                 log(
                     Level::Error,
                     "orders-service",
@@ -160,31 +154,31 @@ impl Guest for Component {
                     ResultRowEntry {
                         column_name,
                         value: PgValue::Text(val),
-                    } if column_name == *"order_number" => {
+                    } if &column_name == "order_number" => {
                         order_number = val;
                     }
                     ResultRowEntry {
                         column_name,
                         value: PgValue::Int4(val),
-                    } if column_name == *"order_total" => {
+                    } if &column_name == "order_total" => {
                         order_total = val;
                     }
                     ResultRowEntry {
                         column_name,
                         value: PgValue::Text(val),
-                    } if column_name == *"sku" => {
+                    } if &column_name == "sku" => {
                         sku = val;
                     }
                     ResultRowEntry {
                         column_name,
                         value: PgValue::Int4(val),
-                    } if column_name == *"price" => {
+                    } if &column_name == "price" => {
                         price = val;
                     }
                     ResultRowEntry {
                         column_name,
                         value: PgValue::Int4(val),
-                    } if column_name == *"quantity" => {
+                    } if &column_name == "quantity" => {
                         quantity = val;
                     }
                     _ => {}

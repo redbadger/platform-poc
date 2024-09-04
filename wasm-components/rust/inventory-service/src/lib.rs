@@ -12,11 +12,11 @@ wit_bindgen::generate!({
 use common::inventory::Availability as AvailabilityData;
 use exports::platform_poc::inventory::inventory::Guest;
 use platform_poc::inventory::types::{Availability, Error};
-use wasmcloud::postgres::query::query;
-use wasmcloud::postgres::query::PgValue;
-use wasmcloud::postgres::types::ResultRowEntry;
-
 use wasi::logging::logging::{log, Level};
+use wasmcloud::postgres::{
+    query::{query, PgValue},
+    types::ResultRowEntry,
+};
 
 struct Component;
 

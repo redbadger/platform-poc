@@ -36,7 +36,7 @@ impl Guest for Component {
             let product_json = serde_json::to_string(&product)
                 .expect("DATA-INIT-PRODUCTS: failed to convert product to json");
             bucket
-                .set(product.sku.as_str(), product_json.as_bytes())
+                .set(&product.sku, product_json.as_bytes())
                 .expect("DATA-INIT-PRODUCTS: failed to set product");
         }
         log(Level::Info, "data-init", "Products initialized!");

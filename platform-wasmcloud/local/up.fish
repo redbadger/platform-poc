@@ -1,5 +1,8 @@
 #!/usr/bin/env fish
 
+brew services start redis
+brew services start postgresql@15
+
 wash up -d
 
 function daemon
