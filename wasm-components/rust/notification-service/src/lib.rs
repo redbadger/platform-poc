@@ -15,7 +15,6 @@ use wasi::logging::logging::{log, Level};
 struct Component;
 
 impl Guest for Component {
-    #[doc = r" Callback handled to invoke a function when a message is received from a subscription"]
     fn handle_message(msg: BrokerMessage) -> Result<(), String> {
         let notification: OrderNotification = serde_json::from_slice(&msg.body).expect(
             "NOTIFICATION-SERVICE-HANDLE-MESSAGE: failed to deserialize order notification",

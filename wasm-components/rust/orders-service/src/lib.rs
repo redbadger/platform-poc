@@ -34,7 +34,6 @@ use wasmcloud::{
 struct Component;
 
 impl Guest for Component {
-    #[doc = r" Creates an `order` for specified line items"]
     fn create_order(items: Vec<LineItem>) -> Result<(), Error> {
         log(
             Level::Info,
@@ -120,7 +119,6 @@ impl Guest for Component {
         Ok(())
     }
 
-    #[doc = r" Lists all orders"]
     fn get_orders() -> Result<Vec<Order>, Error> {
         let get_orders_query = indoc! {r#"
         SELECT

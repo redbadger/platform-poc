@@ -2,8 +2,8 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct Product {
+    /// UUID
     pub id: String,
-    #[doc = r" UUID"]
     pub name: String,
     pub description: String,
     pub price: i32,
