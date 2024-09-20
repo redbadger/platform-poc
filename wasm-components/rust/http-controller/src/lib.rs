@@ -153,7 +153,7 @@ impl Handlers {
         match request.method() {
             Method::Get => {
                 let skus = &query[KEY];
-                let skus: Vec<String> = skus.split(',').map(|s| s.to_string()).collect();
+                let skus: Vec<String> = skus.split(',').map(String::from).collect();
 
                 match get_inventory(&skus) {
                     Ok(inventory) => {
@@ -178,7 +178,7 @@ impl Handlers {
                 Err(e) => response::server_error(&format!("failed to get orders: {e}")),
             },
             Method::Post => {
-                let Ok(items) = request.json::<Vec<common::orders::LineItem>>() else {
+                let Ok(items) = request.json::<Vec<LineItemData>>() else {
                     return response::bad_request();
                 };
 
