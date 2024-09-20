@@ -41,14 +41,15 @@ pub type StatusCode = u16;
 
 #[handler]
 fn handler(request: Request) -> Result<Response, ErrorCode> {
-    let method = request.method();
-    let path = request.path();
-    let query = request.query();
-
     log(
         Level::Info,
         MODULE,
-        &format!("Received {:?} request at {}{:?}", method, path, query),
+        &format!(
+            "Received {:?} request at {}{:?}",
+            request.method(),
+            request.path(),
+            request.query()
+        ),
     );
 
     let mut router = Router::new();
@@ -66,7 +67,7 @@ fn handler(request: Request) -> Result<Response, ErrorCode> {
         .add("/products", Handlers::Products)
         .expect("adding route");
 
-    let Some(m) = router.best_match(path) else {
+    let Some(m) = router.best_match(request.path()) else {
         return response::not_found();
     };
 
@@ -117,26 +118,25 @@ impl Handlers {
         match request.method() {
             Method::Get => match schema {
                 Schema::All => match init_all() {
-                    Ok(_) => response::ok(),
+                    Ok(()) => response::ok(),
                     Err(e) => {
                         response::server_error(&format!("failed to initialize all schemas: {e}"))
                     }
                 },
-
                 Schema::Inventory => match init_inventory() {
-                    Ok(_) => response::ok(),
+                    Ok(()) => response::ok(),
                     Err(e) => response::server_error(&format!(
                         "failed to initialize inventory schema: {e}"
                     )),
                 },
                 Schema::Orders => match init_orders() {
-                    Ok(_) => response::ok(),
+                    Ok(()) => response::ok(),
                     Err(e) => {
                         response::server_error(&format!("failed to initialize orders schema: {e}"))
                     }
                 },
                 Schema::Products => match init_products() {
-                    Ok(_) => response::ok(),
+                    Ok(()) => response::ok(),
                     Err(e) => response::server_error(&format!(
                         "failed to initialize products schema: {e}"
                     )),
@@ -189,8 +189,7 @@ impl Handlers {
 
                 match create_order(&items) {
                     Ok(()) => response::created(),
-                    Err(e) => {
-                        let OrderError::Internal(msg) = e;
+                    Err(OrderError::Internal(msg)) => {
                         response::server_error(&format!("failed to create order: {msg}"))
                     }
                 }
@@ -214,7 +213,7 @@ impl Handlers {
                 };
 
                 match create_product(&data) {
-                    Ok(_) => response::created(),
+                    Ok(()) => response::created(),
                     Err(e) => response::server_error(&format!("failed to create product: {e}")),
                 }
             }
@@ -270,7 +269,7 @@ mod response {
         log(Level::Error, MODULE, msg);
         Response::builder()
             .status_code(500)
-            .body("Internal Server Error")
+            .body("500 Internal Server Error")
             .build()
     }
 }
