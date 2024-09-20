@@ -20,7 +20,6 @@ wit_bindgen::generate!({
 
 use routefinder::Router;
 use waki::{handler, ErrorCode, Method, Request, Response};
-
 use wasi::logging::logging::{log, Level};
 
 use common::{
@@ -36,8 +35,6 @@ use platform_poc::{
 };
 
 const MODULE: &str = "http-controller";
-
-pub type StatusCode = u16;
 
 #[handler]
 fn handler(request: Request) -> Result<Response, ErrorCode> {
