@@ -13,4 +13,4 @@ resolver = "2"
 [workspace.dependencies]
 serde_json = "1.0.117"
 serde = { version = "1.0", features = ["derive"] }
-wit-bindgen = "0.30"
+wit-bindgen = "0.32"
