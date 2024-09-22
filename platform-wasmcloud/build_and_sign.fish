@@ -27,13 +27,4 @@ for component in data-init inventory-service orders-service products-service htt
     popd
 end
 
-### optimize, requires `wasm-opt` from `binaryen`
-# e.g.`cargo binstall wasm-opt`
-pushd $OUTPUT_DIR
-for component in data_init inventory_service orders_service products_service http_controller notification_service
-    wasm-opt -Oz --enable-bulk-memory -o {$component}_s_opt.wasm {$component}_s.wasm
-    mv {$component}_s_opt.wasm {$component}_s.wasm
-end
-popd
-
 popd
