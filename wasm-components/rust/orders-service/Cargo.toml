@@ -7,9 +7,9 @@ version = "0.1.0"
 crate-type = ["cdylib"]
 
 [dependencies]
-common = { path = "../common" }
 indoc = "2.0.5"
+notification-service = { version = "0.1.0", path = "../notification-service" }
 serde.workspace = true
 serde_json.workspace = true
-uuid = { version = "1.8.0", features = ["v4"] }
+uuid = { workspace = true, features = ["v4"] }
 wit-bindgen.workspace = true

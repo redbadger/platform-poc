@@ -18,15 +18,13 @@ wit_bindgen::generate!({
     generate_all,
 });
 
+use products_service::SerializableProduct;
 use routefinder::Router;
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 use waki::{handler, ErrorCode, Method, Request, Response};
 use wasi::logging::logging::{log, Level};
 
-use common::{
-    inventory::Availability as AvailabilityData,
-    orders::{LineItem as LineItemData, Order as OrderData},
-    products::Product as ProductData,
-};
 use platform_poc::{
     data_init::init_funcs::{init_all, init_inventory, init_orders, init_products},
     inventory::inventory::{get_inventory, Availability},
@@ -157,7 +155,7 @@ impl Handlers {
 
                 match get_inventory(&skus) {
                     Ok(inventory) => {
-                        let body: Vec<AvailabilityData> =
+                        let body: Vec<SerializableAvailability> =
                             inventory.iter().map(Into::into).collect();
                         response::ok_with_json(&body)
                     }
@@ -172,13 +170,21 @@ impl Handlers {
         match request.method() {
             Method::Get => match get_orders() {
                 Ok(orders) => {
-                    let body: Vec<OrderData> = orders.iter().map(Into::into).collect();
+                    let body: Vec<SerializableOrder> =
+                        match orders.iter().map(TryInto::try_into).collect() {
+                            Ok(body) => body,
+                            Err(e) => {
+                                return response::server_error(&format!(
+                                    "failed to parse orders: {e}"
+                                ))
+                            }
+                        };
                     response::ok_with_json(&body)
                 }
                 Err(e) => response::server_error(&format!("failed to get orders: {e}")),
             },
             Method::Post => {
-                let Ok(items) = request.json::<Vec<LineItemData>>() else {
+                let Ok(items) = request.json::<Vec<SerializableLineItem>>() else {
                     return response::bad_request();
                 };
 
@@ -199,13 +205,25 @@ impl Handlers {
         match request.method() {
             Method::Get => match list_products() {
                 Ok(products) => {
-                    let body: Vec<ProductData> = products.iter().map(Into::into).collect();
+                    let body: Vec<SerializableProduct> =
+                        match products.iter().map(TryInto::try_into).collect() {
+                            Ok(body) => body,
+                            Err(e) => {
+                                return response::server_error(&format!(
+                                    "failed to parse products: {e}"
+                                ))
+                            }
+                        };
                     response::ok_with_json(&body)
                 }
                 Err(e) => response::server_error(&format!("failed to list products: {e}")),
             },
             Method::Post => {
-                let Ok(data) = request.json::<ProductData>().as_ref().map(Into::into) else {
+                let Ok(data) = request
+                    .json::<SerializableProduct>()
+                    .as_ref()
+                    .map(Into::into)
+                else {
                     return response::bad_request();
                 };
 
@@ -271,65 +289,92 @@ mod response {
     }
 }
 
-impl From<&Product> for ProductData {
-    fn from(product: &Product) -> Self {
-        ProductData {
-            id: product.id.clone(),
-            name: product.name.clone(),
-            description: product.description.clone(),
-            price: product.price,
-            sku: product.sku.clone(),
-        }
+impl TryFrom<&Order> for SerializableOrder {
+    type Error = anyhow::Error;
+
+    fn try_from(order: &Order) -> Result<Self, Self::Error> {
+        Ok(SerializableOrder {
+            order_number: order.order_number.parse()?,
+            total: Pence(order.total),
+            line_items: order.line_items.iter().map(Into::into).collect(),
+        })
     }
 }
 
-impl From<&ProductData> for Product {
-    fn from(product: &ProductData) -> Self {
-        Product {
-            id: product.id.clone(),
-            name: product.name.clone(),
-            description: product.description.clone(),
-            price: product.price,
-            sku: product.sku.clone(),
-        }
-    }
+#[derive(Serialize, Deserialize, Default)]
+pub struct SerializableAvailability {
+    pub sku: String,
+    pub is_in_stock: bool,
 }
 
-impl From<&Availability> for AvailabilityData {
+impl From<&Availability> for SerializableAvailability {
     fn from(product: &Availability) -> Self {
-        AvailabilityData {
+        SerializableAvailability {
             sku: product.sku.clone(),
             is_in_stock: product.is_in_stock,
         }
     }
 }
 
-impl From<&LineItemData> for LineItem {
-    fn from(value: &LineItemData) -> Self {
+#[derive(Serialize, Deserialize)]
+struct Pence(i32);
+
+#[derive(Serialize, Deserialize)]
+struct SerializableLineItem {
+    pub sku: String,
+    pub price: Pence,
+    pub quantity: i32,
+}
+
+impl From<&SerializableLineItem> for LineItem {
+    fn from(value: &SerializableLineItem) -> Self {
         LineItem {
             sku: value.sku.clone(),
-            price: value.price,
+            price: value.price.0,
             quantity: value.quantity,
         }
     }
 }
 
-impl From<&LineItem> for LineItemData {
+impl From<&LineItem> for SerializableLineItem {
     fn from(value: &LineItem) -> Self {
-        LineItemData {
+        SerializableLineItem {
             sku: value.sku.clone(),
-            price: value.price,
+            price: Pence(value.price),
             quantity: value.quantity,
         }
     }
 }
 
-impl From<&Order> for OrderData {
-    fn from(order: &Order) -> Self {
-        OrderData {
-            order_number: order.order_number.clone(),
-            total: order.total,
-            line_items: order.line_items.iter().map(Into::into).collect(),
+#[derive(Serialize, Deserialize)]
+struct SerializableOrder {
+    order_number: Uuid,
+    line_items: Vec<SerializableLineItem>,
+    total: Pence,
+}
+
+impl TryFrom<&Product> for SerializableProduct {
+    type Error = anyhow::Error;
+
+    fn try_from(value: &Product) -> Result<Self, Self::Error> {
+        Ok(SerializableProduct {
+            id: value.id.parse()?,
+            name: value.name.clone(),
+            description: value.description.clone(),
+            price: value.price,
+            sku: value.sku.clone(),
+        })
+    }
+}
+
+impl From<&SerializableProduct> for Product {
+    fn from(val: &SerializableProduct) -> Self {
+        Product {
+            id: val.id.to_string(),
+            name: val.name.clone(),
+            description: val.description.clone(),
+            price: val.price,
+            sku: val.sku.clone(),
         }
     }
 }

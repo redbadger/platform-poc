@@ -9,7 +9,6 @@ wit_bindgen::generate!({
     generate_all,
 });
 
-use common::inventory::Availability as AvailabilityData;
 use exports::platform_poc::inventory::inventory::Guest;
 use platform_poc::inventory::types::{Availability, Error};
 use wasi::logging::logging::{log, Level};
@@ -19,15 +18,7 @@ use wasmcloud::postgres::{
 };
 
 struct Component;
-
-impl From<AvailabilityData> for Availability {
-    fn from(val: AvailabilityData) -> Self {
-        Availability {
-            sku: val.sku,
-            is_in_stock: val.is_in_stock,
-        }
-    }
-}
+export!(Component);
 
 impl Guest for Component {
     fn get_inventory(skus: Vec<String>) -> Result<Vec<Availability>, Error> {
@@ -46,9 +37,9 @@ impl Guest for Component {
             if !sql_result.is_empty() {
                 let row = &sql_result[0];
 
-                let availability_data = row.iter().fold(
-                    AvailabilityData::default(),
-                    |mut acc: AvailabilityData, entry: &ResultRowEntry| {
+                let availability = row.iter().fold(
+                    Availability::default(),
+                    |mut acc: Availability, entry: &ResultRowEntry| {
                         match entry.column_name.as_str() {
                             "sku" => {
                                 acc.sku = if let PgValue::Text(sku) = &entry.value {
@@ -70,7 +61,7 @@ impl Guest for Component {
                     },
                 );
 
-                inventory.push(availability_data.into());
+                inventory.push(availability);
             }
         }
 
@@ -78,4 +69,11 @@ impl Guest for Component {
     }
 }
 
-export!(Component);
+impl Default for Availability {
+    fn default() -> Self {
+        Availability {
+            sku: Default::default(),
+            is_in_stock: Default::default(),
+        }
+    }
+}

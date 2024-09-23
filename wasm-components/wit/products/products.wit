@@ -11,6 +11,7 @@ interface types {
 
     variant error {
         internal(string),
+        bad-request(string),
         store-error(string),
     }
 }

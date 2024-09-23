@@ -11,12 +11,12 @@ wit_bindgen::generate!({
     generate_all,
 });
 
+use notification_service::{OrderNotification, NOTIFICATION_SUBJECT};
 use std::collections::HashMap;
 
 use indoc::indoc;
 use uuid::Uuid;
 
-use common::{notification::OrderNotification, NOTIFICATION_SUBJECT};
 use exports::platform_poc::orders::orders::Guest;
 use platform_poc::{
     inventory::inventory::get_inventory,
@@ -32,6 +32,7 @@ use wasmcloud::{
 };
 
 struct Component;
+export!(Component);
 
 impl Guest for Component {
     fn create_order(items: Vec<LineItem>) -> Result<(), Error> {
@@ -208,5 +209,3 @@ impl Guest for Component {
         Ok(orders)
     }
 }
-
-export!(Component);

@@ -10,9 +10,9 @@ wit_bindgen::generate!({
     generate_all,
 });
 
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use common::products::Product;
 use exports::platform_poc::data_init::init_funcs::Guest;
 use wasi::{
     keyvalue::store::open,
@@ -21,6 +21,7 @@ use wasi::{
 use wasmcloud::postgres::query::{query, PgValue};
 
 struct Component;
+export!(Component);
 
 impl Guest for Component {
     fn init_all() -> Result<(), String> {
@@ -139,100 +140,100 @@ impl Guest for Component {
     }
 }
 
-fn sample_products() -> Vec<Product> {
+fn sample_products() -> Vec<SerializableProduct> {
     vec![
-        Product {
+        SerializableProduct {
             id: Uuid::new_v4().to_string(),
             name: String::from("Car Engine"),
             description: String::from("V8 engine with 500 horsepower"),
             price: 8500,
             sku: String::from("ENG-V8-500"),
         },
-        Product {
+        SerializableProduct {
             id: Uuid::new_v4().to_string(),
             name: String::from("Brake Pads"),
             description: String::from("High performance brake pads"),
             price: 150,
             sku: String::from("BRK-PD-HP"),
         },
-        Product {
+        SerializableProduct {
             id: Uuid::new_v4().to_string(),
             name: String::from("Air Filter"),
             description: String::from("Premium air filter for increased airflow"),
             price: 30,
             sku: String::from("AIR-FLT-PREM"),
         },
-        Product {
+        SerializableProduct {
             id: Uuid::new_v4().to_string(),
             name: String::from("Spark Plugs"),
             description: String::from("High-efficiency spark plugs"),
             price: 60,
             sku: String::from("SPK-PLG-HI-EFF"),
         },
-        Product {
+        SerializableProduct {
             id: Uuid::new_v4().to_string(),
             name: String::from("Tire Set"),
             description: String::from("Set of 4 all-season tires"),
             price: 600,
             sku: String::from("TIR-SET-AS"),
         },
-        Product {
+        SerializableProduct {
             id: Uuid::new_v4().to_string(),
             name: String::from("Battery"),
             description: String::from("High-capacity car battery"),
             price: 120,
             sku: String::from("BAT-HC-12V"),
         },
-        Product {
+        SerializableProduct {
             id: Uuid::new_v4().to_string(),
             name: String::from("Windshield Wipers"),
             description: String::from("All-weather windshield wipers"),
             price: 45,
             sku: String::from("WND-WPR-AW"),
         },
-        Product {
+        SerializableProduct {
             id: Uuid::new_v4().to_string(),
             name: String::from("Fuel Pump"),
             description: String::from("Electric fuel pump for efficient fuel delivery"),
             price: 220,
             sku: String::from("FL-PMP-ELEC"),
         },
-        Product {
+        SerializableProduct {
             id: Uuid::new_v4().to_string(),
             name: String::from("Radiator"),
             description: String::from("High-efficiency car radiator"),
             price: 320,
             sku: String::from("RAD-HI-EFF"),
         },
-        Product {
+        SerializableProduct {
             id: Uuid::new_v4().to_string(),
             name: String::from("Headlights"),
             description: String::from("LED headlights with long lifespan"),
             price: 250,
             sku: String::from("HDL-LED-LONG"),
         },
-        Product {
+        SerializableProduct {
             id: Uuid::new_v4().to_string(),
             name: String::from("Alternator"),
             description: String::from("High output alternator for enhanced performance"),
             price: 300,
             sku: String::from("ALT-HO-ENH"),
         },
-        Product {
+        SerializableProduct {
             id: Uuid::new_v4().to_string(),
             name: String::from("Exhaust System"),
             description: String::from("Performance exhaust system"),
             price: 750,
             sku: String::from("EXH-SYS-PERF"),
         },
-        Product {
+        SerializableProduct {
             id: Uuid::new_v4().to_string(),
             name: String::from("Suspension Kit"),
             description: String::from("Complete suspension kit for improved handling"),
             price: 900,
             sku: String::from("SUS-KIT-IMP"),
         },
-        Product {
+        SerializableProduct {
             id: Uuid::new_v4().to_string(),
             name: String::from("Turbocharger"),
             description: String::from("High-performance turbocharger"),
@@ -242,4 +243,12 @@ fn sample_products() -> Vec<Product> {
     ]
 }
 
-export!(Component);
+#[derive(Serialize, Deserialize)]
+pub struct SerializableProduct {
+    /// UUID
+    pub id: String,
+    pub name: String,
+    pub description: String,
+    pub price: i32,
+    pub sku: String,
+}
