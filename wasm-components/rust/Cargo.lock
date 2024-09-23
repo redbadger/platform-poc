@@ -118,7 +118,6 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "form_urlencoded",
- "products-service",
  "routefinder",
  "serde",
  "uuid",
@@ -216,7 +215,6 @@ name = "orders-service"
 version = "0.1.0"
 dependencies = [
  "indoc",
- "notification-service",
  "serde",
  "serde_json",
  "uuid",

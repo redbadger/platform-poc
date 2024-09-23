@@ -13,8 +13,6 @@ use serde::{Deserialize, Serialize};
 use exports::wasmcloud::messaging::handler::{BrokerMessage, Guest};
 use wasi::logging::logging::{log, Level};
 
-pub const NOTIFICATION_SUBJECT: &str = "platform-poc.order-notification";
-
 struct Component;
 export!(Component);
 
@@ -46,6 +44,6 @@ fn loud_print(msg: &str, data: &str) {
 }
 
 #[derive(Serialize, Deserialize, Default)]
-pub struct OrderNotification {
-    pub order_number: String,
+struct OrderNotification {
+    order_number: String,
 }

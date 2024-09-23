@@ -8,7 +8,6 @@ crate-type = ["cdylib"]
 
 [dependencies]
 indoc = "2.0.5"
-notification-service = { version = "0.1.0", path = "../notification-service" }
 serde.workspace = true
 serde_json.workspace = true
 uuid = { workspace = true, features = ["v4"] }

@@ -9,7 +9,6 @@ crate-type = ["cdylib"]
 [dependencies]
 anyhow.workspace = true
 form_urlencoded = "1.2.1"
-products-service = { version = "0.1.0", path = "../products-service" }
 routefinder = "0.5.4"
 serde.workspace = true
 uuid = { workspace = true, features = ["v4", "serde"] }

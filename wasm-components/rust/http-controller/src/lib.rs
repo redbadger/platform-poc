@@ -18,7 +18,6 @@ wit_bindgen::generate!({
     generate_all,
 });
 
-use products_service::SerializableProduct;
 use routefinder::Router;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -351,6 +350,15 @@ struct SerializableOrder {
     order_number: Uuid,
     line_items: Vec<SerializableLineItem>,
     total: Pence,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct SerializableProduct {
+    pub id: Uuid,
+    pub name: String,
+    pub description: String,
+    pub price: i32,
+    pub sku: String,
 }
 
 impl TryFrom<&Product> for SerializableProduct {

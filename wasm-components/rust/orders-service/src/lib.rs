@@ -11,10 +11,10 @@ wit_bindgen::generate!({
     generate_all,
 });
 
-use notification_service::{OrderNotification, NOTIFICATION_SUBJECT};
 use std::collections::HashMap;
 
 use indoc::indoc;
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use exports::platform_poc::orders::orders::Guest;
@@ -30,6 +30,8 @@ use wasmcloud::{
         types::ResultRowEntry,
     },
 };
+
+const NOTIFICATION_SUBJECT: &str = "platform-poc.order-notification";
 
 struct Component;
 export!(Component);
@@ -208,4 +210,9 @@ impl Guest for Component {
 
         Ok(orders)
     }
+}
+
+#[derive(Serialize, Deserialize, Default)]
+struct OrderNotification {
+    pub order_number: String,
 }
