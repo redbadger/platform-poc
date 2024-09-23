@@ -9,5 +9,5 @@ crate-type = ["cdylib"]
 [dependencies]
 serde.workspace = true
 serde_json.workspace = true
-uuid = { workspace = true, features = ["v4"] }
+uuid = { workspace = true, features = ["serde", "v4"] }
 wit-bindgen.workspace = true

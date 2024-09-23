@@ -81,12 +81,15 @@ impl Guest for ProductComponent {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct SerializableProduct {
-    pub id: Uuid,
-    pub name: String,
-    pub description: String,
-    pub price: i32,
-    pub sku: String,
+struct Pence(i32);
+
+#[derive(Serialize, Deserialize)]
+struct SerializableProduct {
+    id: Uuid,
+    name: String,
+    description: String,
+    price: Pence,
+    sku: String,
 }
 
 impl TryFrom<Product> for SerializableProduct {
@@ -97,7 +100,7 @@ impl TryFrom<Product> for SerializableProduct {
             id: value.id.parse()?,
             name: value.name,
             description: value.description,
-            price: value.price,
+            price: Pence(value.price),
             sku: value.sku,
         })
     }
@@ -109,7 +112,7 @@ impl From<SerializableProduct> for Product {
             id: val.id.to_string(),
             name: val.name,
             description: val.description,
-            price: val.price,
+            price: val.price.0,
             sku: val.sku,
         }
     }

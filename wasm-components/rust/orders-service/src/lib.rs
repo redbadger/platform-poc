@@ -81,11 +81,14 @@ impl Guest for Component {
                 .iter()
                 .fold(0, |acc, item| acc + item.price * item.quantity);
 
-            let order_number = Uuid::new_v4().to_string();
+            let order_number = Uuid::new_v4();
 
             query(
                 &sql,
-                &[PgValue::Text(order_number.clone()), PgValue::Integer(total)],
+                &[
+                    PgValue::Text(order_number.to_string()),
+                    PgValue::Integer(total),
+                ],
             )
             .map_err(|e| {
                 let msg = format!("Failed to insert order: {:?}", e);
@@ -214,5 +217,5 @@ impl Guest for Component {
 
 #[derive(Serialize, Deserialize, Default)]
 struct OrderNotification {
-    pub order_number: String,
+    order_number: Uuid,
 }

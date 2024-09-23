@@ -150,7 +150,7 @@ impl Handlers {
         match request.method() {
             Method::Get => {
                 let skus = &query[KEY];
-                let skus: Vec<String> = skus.split(',').map(String::from).collect();
+                let skus: Vec<String> = skus.split(',').map(Into::into).collect();
 
                 match get_inventory(&skus) {
                     Ok(inventory) => {
@@ -288,22 +288,10 @@ mod response {
     }
 }
 
-impl TryFrom<&Order> for SerializableOrder {
-    type Error = anyhow::Error;
-
-    fn try_from(order: &Order) -> Result<Self, Self::Error> {
-        Ok(SerializableOrder {
-            order_number: order.order_number.parse()?,
-            total: Pence(order.total),
-            line_items: order.line_items.iter().map(Into::into).collect(),
-        })
-    }
-}
-
 #[derive(Serialize, Deserialize, Default)]
-pub struct SerializableAvailability {
-    pub sku: String,
-    pub is_in_stock: bool,
+struct SerializableAvailability {
+    sku: String,
+    is_in_stock: bool,
 }
 
 impl From<&Availability> for SerializableAvailability {
@@ -320,9 +308,9 @@ struct Pence(i32);
 
 #[derive(Serialize, Deserialize)]
 struct SerializableLineItem {
-    pub sku: String,
-    pub price: Pence,
-    pub quantity: i32,
+    sku: String,
+    price: Pence,
+    quantity: i32,
 }
 
 impl From<&SerializableLineItem> for LineItem {
@@ -352,13 +340,25 @@ struct SerializableOrder {
     total: Pence,
 }
 
+impl TryFrom<&Order> for SerializableOrder {
+    type Error = anyhow::Error;
+
+    fn try_from(order: &Order) -> Result<Self, Self::Error> {
+        Ok(SerializableOrder {
+            order_number: order.order_number.parse()?,
+            total: Pence(order.total),
+            line_items: order.line_items.iter().map(Into::into).collect(),
+        })
+    }
+}
+
 #[derive(Serialize, Deserialize)]
-pub struct SerializableProduct {
-    pub id: Uuid,
-    pub name: String,
-    pub description: String,
-    pub price: i32,
-    pub sku: String,
+struct SerializableProduct {
+    id: Uuid,
+    name: String,
+    description: String,
+    price: Pence,
+    sku: String,
 }
 
 impl TryFrom<&Product> for SerializableProduct {
@@ -369,7 +369,7 @@ impl TryFrom<&Product> for SerializableProduct {
             id: value.id.parse()?,
             name: value.name.clone(),
             description: value.description.clone(),
-            price: value.price,
+            price: Pence(value.price),
             sku: value.sku.clone(),
         })
     }
@@ -381,7 +381,7 @@ impl From<&SerializableProduct> for Product {
             id: val.id.to_string(),
             name: val.name.clone(),
             description: val.description.clone(),
-            price: val.price,
+            price: val.price.0,
             sku: val.sku.clone(),
         }
     }

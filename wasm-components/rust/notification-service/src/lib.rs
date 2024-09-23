@@ -9,6 +9,7 @@ wit_bindgen::generate!({
 });
 
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 use exports::wasmcloud::messaging::handler::{BrokerMessage, Guest};
 use wasi::logging::logging::{log, Level};
@@ -22,7 +23,10 @@ impl Guest for Component {
             "NOTIFICATION-SERVICE-HANDLE-MESSAGE: failed to deserialize order notification",
         );
 
-        loud_print("recieved order number", &notification.order_number);
+        loud_print(
+            "recieved order number",
+            &notification.order_number.to_string(),
+        );
 
         Ok(())
     }
@@ -45,5 +49,5 @@ fn loud_print(msg: &str, data: &str) {
 
 #[derive(Serialize, Deserialize, Default)]
 struct OrderNotification {
-    order_number: String,
+    order_number: Uuid,
 }
