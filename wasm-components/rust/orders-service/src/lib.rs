@@ -1,13 +1,5 @@
 wit_bindgen::generate!({
     world: "platform-poc:orders-service/orders-service",
-    path: [
-        "../../wit/deps/wasi/logging",
-        "../../wit/deps/wasmcloud/postgres",
-        "../../wit/deps/wasmcloud/messaging",
-        "../../wit/inventory",
-        "../../wit/orders",
-        "wit",
-    ],
     generate_all,
 });
 

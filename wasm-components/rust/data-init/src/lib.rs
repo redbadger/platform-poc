@@ -1,12 +1,5 @@
 wit_bindgen::generate!({
     world: "platform-poc:di/di",
-    path: [
-        "../../wit/data-init",
-        "../../wit/deps/wasmcloud/postgres",
-        "../../wit/deps/wasi/keyvalue",
-        "../../wit/deps/wasi/logging",
-        "wit",
-    ],
     generate_all,
 });
 

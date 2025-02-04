@@ -1,10 +1,5 @@
 wit_bindgen::generate!({
     world: "platform-poc:notification-service/notification-service",
-    path: [
-        "../../wit/deps/wasi/logging",
-        "../../wit/deps/wasmcloud/messaging",
-        "wit",
-    ],
     generate_all,
 });
 

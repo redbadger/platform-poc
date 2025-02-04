@@ -2,7 +2,7 @@ package platform-poc:products-service;
 
 world products-service {
   import wasi:keyvalue/store@0.2.0-draft;
-  import wasi:logging/logging;
+  import wasi:logging/logging@0.1.0-draft;
 
   export platform-poc:products/products@0.1.0;
 }

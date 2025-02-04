@@ -21,7 +21,7 @@ pushd $COMPONENT_DIR
 ### wash
 for component in data-init inventory-service orders-service products-service http-controller notification-service
     pushd $component
-        RUSTUP_TOOLCHAIN=stable wash build
+        wash build
         set -l COMPONENT (string replace -a '-' _ $component)
         mv build/{$COMPONENT}_s.wasm $OUTPUT_DIR
     popd
