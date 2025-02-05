@@ -185,7 +185,7 @@ spec:
     - name: http-server
       type: capability
       properties:
-        image: ghcr.io/wasmcloud/http-server:0.22.0
+        image: ghcr.io/wasmcloud/http-server:0.25.0
         id: http-server
       traits:
         - type: link
@@ -204,7 +204,7 @@ spec:
     - name: kv-redis
       type: capability
       properties:
-        image: ghcr.io/wasmcloud/keyvalue-redis:0.27.0
+        image: ghcr.io/wasmcloud/keyvalue-redis:0.28.2
         id: kv-redis
 
     - name: sqldb-postgres
@@ -216,7 +216,7 @@ spec:
     - name: nats
       type: capability
       properties:
-        image: ghcr.io/wasmcloud/messaging-nats:0.22.0
+        image: ghcr.io/wasmcloud/messaging-nats:0.24.0
         id: nats
       traits:
         - type: link
