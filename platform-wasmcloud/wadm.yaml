@@ -1,10 +1,10 @@
 apiVersion: core.oam.dev/v1beta1
 kind: Application
 metadata:
-  name: online-store-poc
+  name: platform-poc
   annotations:
     version: v0.0.1
-    description: "TODO: Add a description for the application"
+    description: "A PoC for Wasm Components"
 spec:
   components:
     #################### COMPONENTS ####################
@@ -19,20 +19,31 @@ spec:
             instances: 1
         - type: link
           properties:
-            target: sqldb-postgres
             namespace: wasmcloud
             package: postgres
             interfaces: [query]
-            target_config:
-              - name: online_store_poc-default_pg
+            target:
+              name: sqldb-postgres
+              config:
+                - name: data-init-pg
+                  properties:
+                    POSTGRES_HOST: localhost
+                    POSTGRES_PORT: "5432"
+                    POSTGRES_USERNAME: postgres
+                    POSTGRES_PASSWORD: postgres
+                    POSTGRES_DATABASE: postgres
+                    POSTGRES_TLS_REQUIRED: "false"
         - type: link
           properties:
-            target: kv-redis
             namespace: wasi
             package: keyvalue
             interfaces: [store]
-            target_config:
-              - name: online_store_poc-default_redis
+            target:
+              name: kv-redis
+              config:
+                - name: data-init-redis
+                  properties:
+                    url: "redis://127.0.0.1:6379"
 
     - name: http-controller
       type: component
@@ -42,31 +53,35 @@ spec:
       traits:
         - type: spreadscaler
           properties:
-            instances: 20
+            instances: 100
         - type: link
           properties:
-            target: products-service
             namespace: platform-poc
             package: products
             interfaces: [products]
+            target:
+              name: products-service
         - type: link
           properties:
-            target: data-init
             namespace: platform-poc
             package: data-init
             interfaces: [init-funcs]
+            target:
+              name: data-init
         - type: link
           properties:
-            target: inventory-service
             namespace: platform-poc
             package: inventory
             interfaces: [inventory]
+            target:
+              name: inventory-service
         - type: link
           properties:
-            target: orders-service
             namespace: platform-poc
             package: orders
             interfaces: [orders]
+            target:
+              name: orders-service
 
     - name: products-service
       type: component
@@ -76,15 +91,18 @@ spec:
       traits:
         - type: spreadscaler
           properties:
-            instances: 20
+            instances: 100
         - type: link
           properties:
-            target: kv-redis
             namespace: wasi
             package: keyvalue
             interfaces: [store]
-            target_config:
-              - name: online_store_poc-default_redis
+            target:
+              name: kv-redis
+              config:
+                - name: products-redis
+                  properties:
+                    url: "redis://127.0.0.1:6379"
 
     - name: inventory-service
       type: component
@@ -94,15 +112,23 @@ spec:
       traits:
         - type: spreadscaler
           properties:
-            instances: 20
+            instances: 100
         - type: link
           properties:
-            target: sqldb-postgres
             namespace: wasmcloud
             package: postgres
             interfaces: [query]
-            target_config:
-              - name: online_store_poc-default_pg
+            target:
+              name: sqldb-postgres
+              config:
+                - name: inventory-pg
+                  properties:
+                    POSTGRES_HOST: localhost
+                    POSTGRES_PORT: "5432"
+                    POSTGRES_USERNAME: postgres
+                    POSTGRES_PASSWORD: postgres
+                    POSTGRES_DATABASE: postgres
+                    POSTGRES_TLS_REQUIRED: "false"
 
     - name: notification-service
       type: component
@@ -112,7 +138,7 @@ spec:
       traits:
         - type: spreadscaler
           properties:
-            instances: 20
+            instances: 100
 
     - name: orders-service
       type: component
@@ -122,89 +148,86 @@ spec:
       traits:
         - type: spreadscaler
           properties:
-            instances: 20
+            instances: 100
         - type: link
           properties:
-            target: sqldb-postgres
             namespace: wasmcloud
             package: postgres
             interfaces: [query]
-            target_config:
-              - name: online_store_poc-default_pg
+            target:
+              name: sqldb-postgres
+              config:
+                - name: orders-pg
+                  properties:
+                    POSTGRES_HOST: localhost
+                    POSTGRES_PORT: "5432"
+                    POSTGRES_USERNAME: postgres
+                    POSTGRES_PASSWORD: postgres
+                    POSTGRES_DATABASE: postgres
+                    POSTGRES_TLS_REQUIRED: "false"
         - type: link
           properties:
-            target: inventory-service
             namespace: platform-poc
             package: inventory
             interfaces: [inventory]
+            target:
+              name: inventory-service
         - type: link
           properties:
-            target: nats
             namespace: wasmcloud
             package: messaging
             interfaces: [consumer]
+            target:
+              name: nats
 
     #################### CAPABILITIES ####################
 
     - name: http-server
       type: capability
       properties:
-        image: ghcr.io/wasmcloud/http-server:0.22.0
+        image: ghcr.io/wasmcloud/http-server:0.25.0
         id: http-server
       traits:
         - type: link
           properties:
-            name: http-server
-            target: http-controller
             namespace: wasi
             package: http
             interfaces: [incoming-handler]
-            source_config:
-              - name: default-http
-                properties:
-                  port: "8080"
+            source:
+              config:
+                - name: default-http
+                  properties:
+                    address: 0.0.0.0:8080
+            target:
+              name: http-controller
 
     - name: kv-redis
       type: capability
       properties:
-        image: ghcr.io/wasmcloud/keyvalue-redis:0.27.0
+        image: ghcr.io/wasmcloud/keyvalue-redis:0.28.2
         id: kv-redis
-        config:
-          - name: default-redis
-            properties:
-              url: "redis://127.0.0.1:6379"
 
     - name: sqldb-postgres
       type: capability
       properties:
-        image: ghcr.io/wasmcloud/sqldb-postgres:0.2.0
-        # this one also works ...
-        # image: ghcr.io/wasmcloud/sqldb-postgres:877830d
-        # but 0.3.0 is broken. Have pinged Victor Adossi at Cosmonic in slack
+        image: ghcr.io/wasmcloud/sqldb-postgres:0.7.2
         id: sqldb-postgres
-        config:
-          - name: default-pg
-            properties:
-              POSTGRES_HOST: localhost
-              POSTGRES_PORT: "5432"
-              POSTGRES_USERNAME: postgres
-              POSTGRES_PASSWORD: postgres
-              POSTGRES_TLS_REQUIRED: "false"
-              POSTGRES_DATABASE: postgres
 
     - name: nats
       type: capability
       properties:
-        image: ghcr.io/wasmcloud/messaging-nats:0.22.0
+        image: ghcr.io/wasmcloud/messaging-nats:0.24.0
         id: nats
       traits:
         - type: link
           properties:
-            target: notification-service
             namespace: wasmcloud
             package: messaging
             interfaces: [handler]
-            source_config:
-              - name: default-nats
-                properties:
-                  subscriptions: "platform-poc.order-notification"
+            source:
+              config:
+                - name: default-nats
+                  properties:
+                    subscriptions: "platform-poc.order-notification"
+            target:
+              name: notification-service

@@ -18,4 +18,4 @@ function daemon
     popd
 end
 
-daemon wash-ui wash ui
+daemon wash-ui wash ui -v 0.6.0

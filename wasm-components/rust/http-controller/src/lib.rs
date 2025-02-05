@@ -1,20 +1,5 @@
 wit_bindgen::generate!({
     world: "platform-poc:http-controller/http-controller",
-    path: [
-        "../../wit/deps/wasi/io",
-        "../../wit/deps/wasi/random",
-        "../../wit/deps/wasi/clocks",
-        "../../wit/deps/wasi/filesystem",
-        "../../wit/deps/wasi/sockets",
-        "../../wit/deps/wasi/cli",
-        "../../wit/deps/wasi/http",
-        "../../wit/deps/wasi/logging",
-        "../../wit/inventory",
-        "../../wit/orders",
-        "../../wit/data-init",
-        "../../wit/products",
-        "wit",
-    ],
     generate_all,
 });
 

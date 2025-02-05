@@ -1,11 +1,5 @@
 wit_bindgen::generate!({
     world: "platform-poc:inventory-service/inventory-service",
-    path: [
-        "../../wit/deps/wasmcloud/postgres",
-        "../../wit/deps/wasi/logging",
-        "../../wit/inventory",
-        "wit",
-    ],
     generate_all,
 });
 

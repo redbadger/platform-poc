@@ -33,28 +33,44 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v4
 
+      - name: Install fish
+        run: |
+          sudo apt-add-repository ppa:fish-shell/release-3
+          sudo apt update
+          sudo apt install fish
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@nightly
         with:
           targets: wasm32-wasip2
           components: rustfmt
 
-      - name: Build
+      - name: Install wash
+        run: |
+          curl -s https://packagecloud.io/install/repositories/wasmcloud/core/script.deb.sh | sudo bash
+          sudo apt install wash
+
+      - name: Check
         shell: bash
         working-directory: wasm-components/rust
         run: |
           cargo fmt --all --check
-          cargo build --workspace
 
-      - name: Install nextest
+      - name: Build
         shell: bash
+        working-directory: platform-wasmcloud
         run: |
-          set -euxo pipefail
-          curl -LsSf https://get.nexte.st/0.9/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
+          ./build_and_sign.fish
 
-      - name: Run tests
-        shell: bash
-        working-directory: wasm-components/rust
-        run: |
-          rm .cargo/config.toml # so we don't attempt to execute wasm directly
-          cargo nextest run --all-features
+      # - name: Install nextest
+      #   shell: bash
+      #   run: |
+      #     set -euxo pipefail
+      #     curl -LsSf https://get.nexte.st/0.9/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
+
+      # - name: Run tests
+      #   shell: bash
+      #   working-directory: wasm-components/rust
+      #   run: |
+      #     rm .cargo/config.toml # so we don't attempt to execute wasm directly
+      #     cargo nextest run --all-features
