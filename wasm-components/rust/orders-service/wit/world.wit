@@ -1,7 +1,7 @@
 package platform-poc:orders-service;
 
 world orders-service {
-  import wasi:logging/logging;
+  import wasi:logging/logging@0.1.0-draft;
   import wasmcloud:postgres/query@0.1.1-draft;
   import wasmcloud:messaging/consumer@0.2.0;
 

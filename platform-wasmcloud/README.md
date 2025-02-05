@@ -14,7 +14,10 @@ Install `wash` with `brew install wash`.
 
 ```bash
 wash --version
-# wash 0.30.0
+# wash          v0.38.0
+# ├ nats-server v2.10.20
+# ├ wadm        v0.19.0
+# └ wasmcloud   v1.4.2
 ```
 
 run
