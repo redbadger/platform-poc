@@ -1,7 +1,0 @@
-package platform-poc:products-http@0.1.0;
-
-world products-http-service {
-  import platform-poc:products/products@0.1.0;
-
-  export wasi:http/incoming-handler@0.2.0-rc-2023-12-05;
-}
