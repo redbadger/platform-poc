@@ -1,0 +1,24 @@
+name = "http-controller"
+version = "0.1.0"
+language = "rust"
+type = "component"
+
+[component]
+wit_world = "http-controller"
+wasm_target = "wasm32-wasi"
+
+[[registry.pull.sources]]
+target = "platform-poc:data-init"
+source = "file://../data-init/wit"
+
+[[registry.pull.sources]]
+target = "platform-poc:inventory"
+source = "file://../inventory-service/wit"
+
+[[registry.pull.sources]]
+target = "platform-poc:orders"
+source = "file://../orders-service/wit"
+
+[[registry.pull.sources]]
+target = "platform-poc:products"
+source = "file://../products-service/wit"

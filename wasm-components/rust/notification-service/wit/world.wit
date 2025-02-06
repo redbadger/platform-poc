@@ -1,7 +1,0 @@
-package platform-poc:notification-service;
-
-world notification-service {
-  import wasi:logging/logging@0.1.0-draft;
-
-  export wasmcloud:messaging/handler@0.2.0;
-}

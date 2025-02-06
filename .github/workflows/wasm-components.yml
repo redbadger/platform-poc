@@ -40,9 +40,9 @@ jobs:
           sudo apt install fish
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@nightly
+        uses: dtolnay/rust-toolchain@1.84.1
         with:
-          targets: wasm32-wasip2
+          targets: wasm32-wasip1,wasm32-wasip2
           components: rustfmt
 
       - name: Install wash
@@ -52,7 +52,7 @@ jobs:
 
       - name: Check
         shell: bash
-        working-directory: wasm-components/rust
+        working-directory: wasm-components
         run: |
           cargo fmt --all --check
 
@@ -70,7 +70,7 @@ jobs:
 
       # - name: Run tests
       #   shell: bash
-      #   working-directory: wasm-components/rust
+      #   working-directory: wasm-components
       #   run: |
       #     rm .cargo/config.toml # so we don't attempt to execute wasm directly
       #     cargo nextest run --all-features

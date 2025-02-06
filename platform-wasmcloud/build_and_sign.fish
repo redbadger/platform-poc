@@ -2,7 +2,7 @@
 
 set SCRIPT_DIR (dirname (realpath (status -f)))
 set OUTPUT_DIR $SCRIPT_DIR/signed/
-set COMPONENT_DIR (realpath $SCRIPT_DIR/../wasm-components/rust)
+set COMPONENT_DIR (realpath $SCRIPT_DIR/../wasm-components)
 set INPUT_DIR $COMPONENT_DIR/target/wasm32-wasip2/release/
 
 mkdir -p $OUTPUT_DIR
