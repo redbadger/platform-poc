@@ -4,6 +4,11 @@ The Wasm Components and their various configurations for deployment.
 
 They are currently written in Rust, but could be written in any language that compiles to Wasm.
 
+<!-- prettier-ignore -->
+> [!NOTE]
+> To run these components in a local wasmCloud instance,
+> see the [platform-wasmcloud](../platform-wasmcloud) directory.
+
 ## Components
 
 ### [Data init](data-init)

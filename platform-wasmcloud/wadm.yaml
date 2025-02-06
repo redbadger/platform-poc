@@ -11,7 +11,7 @@ spec:
     - name: data-init
       type: component
       properties:
-        image: file://signed/data_init_s.wasm
+        image: localhost:5001/v2/platform-poc/data_init:0.1.0
         id: data-init
       traits:
         - type: spreadscaler
@@ -48,7 +48,7 @@ spec:
     - name: http-controller
       type: component
       properties:
-        image: file://signed/http_controller_s.wasm
+        image: localhost:5001/v2/platform-poc/http_controller:0.1.0
         id: http-controller
       traits:
         - type: spreadscaler
@@ -86,7 +86,7 @@ spec:
     - name: products-service
       type: component
       properties:
-        image: file://signed/products_service_s.wasm
+        image: localhost:5001/v2/platform-poc/products_service:0.1.0
         id: products-service
       traits:
         - type: spreadscaler
@@ -107,7 +107,7 @@ spec:
     - name: inventory-service
       type: component
       properties:
-        image: file://signed/inventory_service_s.wasm
+        image: localhost:5001/v2/platform-poc/inventory_service:0.1.0
         id: inventory-service
       traits:
         - type: spreadscaler
@@ -133,7 +133,7 @@ spec:
     - name: notification-service
       type: component
       properties:
-        image: file://signed/notification_service_s.wasm
+        image: localhost:5001/v2/platform-poc/notification_service:0.1.0
         id: notification-service
       traits:
         - type: spreadscaler
@@ -143,7 +143,7 @@ spec:
     - name: orders-service
       type: component
       properties:
-        image: file://signed/orders_service_s.wasm
+        image: localhost:5001/v2/platform-poc/orders_service:0.1.0
         id: orders-service
       traits:
         - type: spreadscaler
