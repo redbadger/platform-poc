@@ -60,7 +60,7 @@ jobs:
         shell: bash
         working-directory: platform-wasmcloud
         run: |
-          ./build_and_sign.fish
+          ./build.fish
 
       # - name: Install nextest
       #   shell: bash

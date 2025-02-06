@@ -20,18 +20,29 @@ wash --version
 # └ wasmcloud   v1.4.2
 ```
 
+### Docker
+
+We use `docker` to start a local registry, so you will need to have it installed.
+
 ## run
 
-1. Build and sign the components
+1. Start up a running environment.
 
-   ```bash
-   ./build_and_sign.fish
-   ```
-
-1. Start the wasmCloud host
+   Starts:
+   * a local redis server
+   * a local postgres server
+   * a local OCI registry
+   * a single wasmCloud host, with NATS and `wadm` running
+   * the wash UI (http://localhost:3030/)
 
    ```bash
    ./local/up.fish
+   ```
+
+1. Build (and sign) the components, pushing them to the local registry
+
+   ```bash
+   ./build_and_push.fish
    ```
 
 1. Deploy the components with `wadm`

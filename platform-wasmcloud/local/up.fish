@@ -2,13 +2,22 @@
 
 set --local SCRIPT_DIR (dirname (realpath (status -f)))
 
+function section
+    echo
+    string pad --right --char=— -w$COLUMNS "———— $argv ————"
+end
+
+section "starting redis"
 brew services start redis
+
+section "starting postgresql@15"
 brew services start postgresql@15
 
+section "starting local registry"
 # local registry on port 5001
 $SCRIPT_DIR/../registry.fish up
 
-
+section "starting wasmcloud, NATS and wadm"
 set -x WASMCLOUD_OCI_ALLOWED_INSECURE localhost:5001
 wash up -d
 
@@ -25,4 +34,5 @@ function daemon
     popd
 end
 
+section "starting wash-ui"
 daemon wash-ui wash ui -v 0.6.0

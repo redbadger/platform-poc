@@ -2,9 +2,18 @@
 
 set --local SCRIPT_DIR (dirname (realpath (status -f)))
 
+function section
+    echo
+    string pad --right --char=— -w$COLUMNS "———— $argv ————"
+end
 
+section "stopping platform-poc wasm components"
+$SCRIPT_DIR/../stop.fish
+
+section "stopping wasmcloud, NATS and wadm"
 wash down --all
 
+section "stopping local registry"
 # local registry on port 5001
 $SCRIPT_DIR/../registry.fish down
 
@@ -22,8 +31,14 @@ function stop
     popd
 end
 
+section "stopping wash-ui"
 stop wash-ui
+
+section "stopping redis"
 brew services stop redis
+
+section "stopping postgresql@15"
 brew services stop postgresql@15
 
+section "draining caches"
 wash drain all
