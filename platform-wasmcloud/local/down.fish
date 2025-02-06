@@ -1,6 +1,12 @@
 #!/usr/bin/env fish
 
+set --local SCRIPT_DIR (dirname (realpath (status -f)))
+
+
 wash down --all
+
+# local registry on port 5001
+$SCRIPT_DIR/../registry.fish down
 
 function stop
     set -l name $argv[1]
@@ -19,3 +25,5 @@ end
 stop wash-ui
 brew services stop redis
 brew services stop postgresql@15
+
+wash drain all

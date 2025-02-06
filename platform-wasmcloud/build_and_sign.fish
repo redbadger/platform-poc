@@ -24,6 +24,8 @@ for component in data-init inventory-service orders-service products-service htt
         wash build
         set -l COMPONENT (string replace -a '-' _ $component)
         mv build/{$COMPONENT}_s.wasm $OUTPUT_DIR
+        # TODO: make this better...
+        wash push --insecure localhost:5001/v2/platform-poc/{$COMPONENT}:0.1.0 $OUTPUT_DIR/{$COMPONENT}_s.wasm
     popd
 end
 
