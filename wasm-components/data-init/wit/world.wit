@@ -1,0 +1,9 @@
+package platform-poc:data-init@0.1.0;
+
+world data-init-service {
+  import wasmcloud:postgres/query@0.1.1-draft;
+  import wasi:keyvalue/store@0.2.0-draft;
+  import wasi:logging/logging@0.1.0-draft;
+
+  export init-funcs;
+}
