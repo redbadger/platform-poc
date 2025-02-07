@@ -1,0 +1,5 @@
+project_id  = "platform-poc-wasmcloud"
+region      = "europe-west2"
+pg_user     = "postgres"
+pg_password = "postgres"
+pg_database = "postgres"

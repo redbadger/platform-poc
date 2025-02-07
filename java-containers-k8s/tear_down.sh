@@ -5,18 +5,18 @@ pushd infrastructure
 echo "tearing down infrastructure..."
 
 pushd kubernetes
-terraform init
-terraform destroy -auto-approve
+tofu init
+tofu destroy
 popd
 
 pushd cluster
-terraform init
-terraform destroy -auto-approve
+tofu init
+tofu destroy
 popd
 
 pushd storage
-terraform init
-terraform destroy -auto-approve
+tofu init
+tofu destroy
 popd
 
 echo "infrastructure tear down finished!"
