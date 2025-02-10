@@ -1,0 +1,233 @@
+apiVersion: core.oam.dev/v1beta1
+kind: Application
+metadata:
+  name: platform-poc
+  annotations:
+    version: v0.0.1
+    description: "A PoC for Wasm Components"
+spec:
+  components:
+    #################### COMPONENTS ####################
+    - name: data-init
+      type: component
+      properties:
+        image: host.docker.internal:5001/v2/platform-poc/data_init:0.1.0
+        id: data-init
+      traits:
+        - type: spreadscaler
+          properties:
+            instances: 1
+        - type: link
+          properties:
+            namespace: wasmcloud
+            package: postgres
+            interfaces: [query]
+            target:
+              name: sqldb-postgres
+              config:
+                - name: data-init-pg
+                  properties:
+                    POSTGRES_HOST: host.docker.internal
+                    POSTGRES_PORT: "5432"
+                    POSTGRES_USERNAME: postgres
+                    POSTGRES_PASSWORD: postgres
+                    POSTGRES_DATABASE: postgres
+                    POSTGRES_TLS_REQUIRED: "false"
+        - type: link
+          properties:
+            namespace: wasi
+            package: keyvalue
+            interfaces: [store]
+            target:
+              name: kv-redis
+              config:
+                - name: data-init-redis
+                  properties:
+                    url: "redis://host.docker.internal:6379"
+
+    - name: http-controller
+      type: component
+      properties:
+        image: host.docker.internal:5001/v2/platform-poc/http_controller:0.1.0
+        id: http-controller
+      traits:
+        - type: spreadscaler
+          properties:
+            instances: 100
+        - type: link
+          properties:
+            namespace: platform-poc
+            package: products
+            interfaces: [products]
+            target:
+              name: products-service
+        - type: link
+          properties:
+            namespace: platform-poc
+            package: data-init
+            interfaces: [init-funcs]
+            target:
+              name: data-init
+        - type: link
+          properties:
+            namespace: platform-poc
+            package: inventory
+            interfaces: [inventory]
+            target:
+              name: inventory-service
+        - type: link
+          properties:
+            namespace: platform-poc
+            package: orders
+            interfaces: [orders]
+            target:
+              name: orders-service
+
+    - name: products-service
+      type: component
+      properties:
+        image: host.docker.internal:5001/v2/platform-poc/products_service:0.1.0
+        id: products-service
+      traits:
+        - type: spreadscaler
+          properties:
+            instances: 100
+        - type: link
+          properties:
+            namespace: wasi
+            package: keyvalue
+            interfaces: [store]
+            target:
+              name: kv-redis
+              config:
+                - name: products-redis
+                  properties:
+                    url: "redis://host.docker.internal:6379"
+
+    - name: inventory-service
+      type: component
+      properties:
+        image: host.docker.internal:5001/v2/platform-poc/inventory_service:0.1.0
+        id: inventory-service
+      traits:
+        - type: spreadscaler
+          properties:
+            instances: 100
+        - type: link
+          properties:
+            namespace: wasmcloud
+            package: postgres
+            interfaces: [query]
+            target:
+              name: sqldb-postgres
+              config:
+                - name: inventory-pg
+                  properties:
+                    POSTGRES_HOST: host.docker.internal
+                    POSTGRES_PORT: "5432"
+                    POSTGRES_USERNAME: postgres
+                    POSTGRES_PASSWORD: postgres
+                    POSTGRES_DATABASE: postgres
+                    POSTGRES_TLS_REQUIRED: "false"
+
+    - name: notification-service
+      type: component
+      properties:
+        image: host.docker.internal:5001/v2/platform-poc/notification_service:0.1.0
+        id: notification-service
+      traits:
+        - type: spreadscaler
+          properties:
+            instances: 100
+
+    - name: orders-service
+      type: component
+      properties:
+        image: host.docker.internal:5001/v2/platform-poc/orders_service:0.1.0
+        id: orders-service
+      traits:
+        - type: spreadscaler
+          properties:
+            instances: 100
+        - type: link
+          properties:
+            namespace: wasmcloud
+            package: postgres
+            interfaces: [query]
+            target:
+              name: sqldb-postgres
+              config:
+                - name: orders-pg
+                  properties:
+                    POSTGRES_HOST: host.docker.internal
+                    POSTGRES_PORT: "5432"
+                    POSTGRES_USERNAME: postgres
+                    POSTGRES_PASSWORD: postgres
+                    POSTGRES_DATABASE: postgres
+                    POSTGRES_TLS_REQUIRED: "false"
+        - type: link
+          properties:
+            namespace: platform-poc
+            package: inventory
+            interfaces: [inventory]
+            target:
+              name: inventory-service
+        - type: link
+          properties:
+            namespace: wasmcloud
+            package: messaging
+            interfaces: [consumer]
+            target:
+              name: nats
+
+    #################### CAPABILITIES ####################
+
+    - name: http-server
+      type: capability
+      properties:
+        image: ghcr.io/wasmcloud/http-server:0.25.0
+        id: http-server
+      traits:
+        - type: link
+          properties:
+            namespace: wasi
+            package: http
+            interfaces: [incoming-handler]
+            source:
+              config:
+                - name: default-http
+                  properties:
+                    address: 0.0.0.0:8080
+            target:
+              name: http-controller
+
+    - name: kv-redis
+      type: capability
+      properties:
+        image: ghcr.io/wasmcloud/keyvalue-redis:0.28.2
+        id: kv-redis
+
+    - name: sqldb-postgres
+      type: capability
+      properties:
+        image: ghcr.io/wasmcloud/sqldb-postgres:0.7.2
+        id: sqldb-postgres
+
+    - name: nats
+      type: capability
+      properties:
+        image: ghcr.io/wasmcloud/messaging-nats:0.24.0
+        id: nats
+      traits:
+        - type: link
+          properties:
+            namespace: wasmcloud
+            package: messaging
+            interfaces: [handler]
+            source:
+              config:
+                - name: default-nats
+                  properties:
+                    subscriptions: "platform-poc.order-notification"
+            target:
+              name: notification-service
