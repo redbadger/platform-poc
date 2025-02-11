@@ -1,7 +1,7 @@
 use crate::api::handlers::{create_order, get_orders, health, root};
 use crate::config::Config;
+use async_nats::Client;
 use axum::{routing::get, routing::post, Router};
-use rdkafka::producer::FutureProducer;
 use sqlx::{Pool, Postgres};
 use std::{
     net::{IpAddr, Ipv4Addr, SocketAddr},
@@ -12,20 +12,18 @@ use tokio::net::TcpListener;
 pub struct AppState {
     pub config: Config,
     pub pool: Pool<Postgres>,
-    pub producer: FutureProducer,
+    pub client: Client,
 }
 
-pub async fn create(
-    config: Config,
-    pool: Pool<Postgres>,
-    producer: FutureProducer,
-) -> anyhow::Result<()> {
+pub async fn create(config: Config, pool: Pool<Postgres>) -> anyhow::Result<()> {
     let port = config.port;
+
+    let client = async_nats::connect(&config.nats_url).await?;
 
     let state = Arc::new(AppState {
         config,
         pool,
-        producer,
+        client,
     });
 
     let app = Router::new()

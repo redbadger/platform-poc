@@ -2,9 +2,9 @@ use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]
 pub struct Config {
-    pub kafka_url: String,
+    pub nats_url: String,
     #[serde(default = "defaults::topic")]
-    pub kafka_topic: String,
+    pub nats_topic: String,
 }
 
 mod defaults {

@@ -1,3 +1,7 @@
+use std::sync::Arc;
+
+use axum::{debug_handler, extract::State, http::StatusCode, response::Result, Json};
+
 use super::{
     server::AppState,
     types::{DbLineItem, OrderPlaceEvent},
@@ -6,9 +10,6 @@ use crate::{
     api::types::{InventoryResponse, OrderRequest},
     model::Order,
 };
-use axum::{debug_handler, extract::State, http::StatusCode, response::Result, Json};
-use rdkafka::producer::FutureRecord;
-use std::{sync::Arc, time::Duration};
 
 pub async fn root() -> &'static str {
     "Hello, World!"
@@ -142,30 +143,21 @@ pub async fn create_order(
             internal_error(e)
         })?;
 
-        let delivery_status = state
-            .producer
-            .send(
-                FutureRecord::to(&state.config.kafka_topic)
-                    .payload(
-                        &serde_json::to_string(&OrderPlaceEvent {
-                            order_number: order.order_number,
-                        })
-                        .map_err(internal_error)?,
-                    )
-                    .key(&format!("Key {}", order.order_number)),
-                Duration::from_secs(0),
-            )
+        let bytes = serde_json::to_vec(&OrderPlaceEvent {
+            order_number: order.order_number,
+        })
+        .map_err(internal_error)?;
+
+        state
+            .client
+            .publish(state.config.nats_topic.clone(), bytes.into())
             .await
-            .map(|delivery_status| delivery_status.0)
-            .map_err(|e| {
-                tracing::error!("Failed to send message: {} {:?}", e.0, e.1);
-                internal_error(e.0)
-            })?;
-        Ok(
-            format!("Order Number {order_id} ({order_number}) Placed Successfully, kafka status {delivery_status}",
-                order_number = order.order_number)
-                .to_string(),
-        )
+            .map_err(internal_error)?;
+
+        Ok(format!(
+            "Order Number {order_id} ({order_number}) Placed Successfully",
+            order_number = order.order_number
+        ))
     } else {
         Ok("Product is not in stock, please try again later".to_string())
     }

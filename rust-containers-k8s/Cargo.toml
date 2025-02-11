@@ -1,0 +1,13 @@
+[workspace]
+members = [
+    "inventory-service",
+    "notification-service",
+    "order-service",
+    "product-service",
+]
+resolver = "2"
+
+[workspace.dependencies]
+anyhow = "1.0.95"
+dotenv = "0.15.0"
+envy = "0.4.2"
