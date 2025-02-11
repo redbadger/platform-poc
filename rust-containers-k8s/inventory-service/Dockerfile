@@ -8,19 +8,19 @@ ENV USER=appuser
 ENV UID=10001
 
 RUN adduser \
-  --disabled-password \
-  --gecos "" \
-  --home "/nonexistent" \
-  --shell "/sbin/nologin" \
-  --no-create-home \
-  --uid "${UID}" \
-  "${USER}"
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid "${UID}" \
+    "${USER}"
 
 WORKDIR /app
 
 COPY ./ .
 
-RUN cargo build --release
+RUN cargo build --release --package inventory-service
 
 ####################################################################################################
 ## Final image
