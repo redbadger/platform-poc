@@ -10,7 +10,7 @@ axum = { version = "0.8.1", features = ["json", "macros", "query"] }
 axum-extra = { version = "0.10.0", features = ["query"] }
 dotenv.workspace = true
 envy.workspace = true
-firestore = "0.44.1"
+redis = { version = "0.28.2", features = ["tokio-comp"] }
 reqwest = { version = "0.12.12", features = ["json"] }
 serde = { version = "1.0.217", features = ["derive"] }
 serde_json = "1.0.138"

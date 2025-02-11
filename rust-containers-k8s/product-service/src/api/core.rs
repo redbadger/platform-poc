@@ -14,22 +14,18 @@ pub struct Product {
 
 pub(crate) struct Service<Store> {
     pub store: Store,
-    started: bool,
 }
 
 impl<S: Store> Service<S> {
     pub fn new(store: S) -> Self {
-        Self {
-            store,
-            started: false,
-        }
+        Self { store }
     }
 
-    pub async fn create_product(&self, product: Product) -> Result<(), StoreError> {
+    pub async fn create_product(&mut self, product: Product) -> Result<(), StoreError> {
         self.store.insert_product(product).await
     }
 
-    pub async fn list_products(&self) -> Result<Vec<Product>, StoreError> {
+    pub async fn list_products(&mut self) -> Result<Vec<Product>, StoreError> {
         self.store.get_all_products().await
     }
 
@@ -64,8 +60,6 @@ impl<S: Store> Service<S> {
             }
         }
 
-        self.started = true;
-
         Ok(())
     }
 }
@@ -77,7 +71,7 @@ pub enum StoreError {
 }
 
 pub(crate) trait Store {
-    async fn insert_product(&self, product: Product) -> Result<(), StoreError>;
-    async fn get_all_products(&self) -> Result<Vec<Product>, StoreError>;
-    async fn is_empty(&self) -> Result<bool, StoreError>;
+    async fn insert_product(&mut self, product: Product) -> Result<(), StoreError>;
+    async fn get_all_products(&mut self) -> Result<Vec<Product>, StoreError>;
+    async fn is_empty(&mut self) -> Result<bool, StoreError>;
 }
