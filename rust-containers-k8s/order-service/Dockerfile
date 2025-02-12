@@ -23,6 +23,8 @@ RUN adduser \
     appuser
 
 FROM debian:bookworm-slim
+RUN apt-get update && apt-get install libssl3 ca-certificates -y && rm -rf /var/lib/apt/lists/*
+RUN update-ca-certificates
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/group /etc/group
 WORKDIR /app

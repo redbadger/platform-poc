@@ -14,7 +14,7 @@ pub struct Config {
 
 mod defaults {
     pub const fn port() -> u16 {
-        8081
+        80
     }
 
     pub fn topic() -> String {

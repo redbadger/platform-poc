@@ -31,12 +31,13 @@ end
 section "deploying platform-poc"
 kubectl apply -k $SCRIPT_DIR/../manifests/overlays/local
 
-function forward
-    set -l resource deployment/$argv[1]
-    set -l port $argv[2]
-    kubectl wait --for=condition=available --timeout=600s $resource
-    daemon inventory kubectl port-forward $resource $port
-end
+# function forward
+#     set -l resource deployment/$argv[1]
+#     set -l port $argv[2]
+#     echo waiting for $resource to be ready
+#     kubectl wait --for=condition=ready --timeout=60s $resource
+#     daemon inventory kubectl port-forward $resource $port
+# end
 
-section "starting port forwarders"
-forward inventory-service 8082
+# section "starting port forwarders"
+# forward inventory-service 8082

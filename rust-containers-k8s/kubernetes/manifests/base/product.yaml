@@ -1,32 +1,32 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: inventory-service
+  name: product-service
   labels:
-    service: inventory
+    service: product
 spec:
   replicas: 1
   selector:
     matchLabels:
-      service: inventory
+      service: product
   template:
     metadata:
       labels:
-        service: inventory
+        service: product
     spec:
       containers:
-        - name: inventory-service
+        - name: product-service
           imagePullPolicy: Always
           ports:
             - name: http
               containerPort: 80
               protocol: TCP
           env:
-            - name: DATABASE_URL
+            - name: REDIS_URL
               valueFrom:
                 secretKeyRef:
                   name: platform-poc-secrets
-                  key: db_url_inventory_service
+                  key: redis_url
           readinessProbe:
             httpGet:
               path: /health
@@ -36,33 +36,33 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: inventory-service
+  name: product-service
   labels:
-    service: inventory
+    service: product
 spec:
   type: ClusterIP
   ports:
     - name: http
-      port: 8080
+      port: 8082
       targetPort: 80
       protocol: TCP
   selector:
-    service: inventory
+    service: product
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: inventory-service
+  name: product-service
   annotations:
     ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   rules:
     - http:
         paths:
-          - path: /api/inventory
+          - path: /api/product
             pathType: Prefix
             backend:
               service:
-                name: inventory-service
+                name: product-service
                 port:
-                  number: 8080
+                  number: 8082

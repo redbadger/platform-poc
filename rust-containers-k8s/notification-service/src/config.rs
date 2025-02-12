@@ -15,7 +15,7 @@ mod defaults {
     }
 
     pub const fn port() -> u16 {
-        8082
+        80
     }
 }
 

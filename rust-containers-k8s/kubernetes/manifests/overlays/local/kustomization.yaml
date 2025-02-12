@@ -5,6 +5,8 @@ resources:
 patches:
   - path: inventory.yaml
   - path: notification.yaml
+  - path: order.yaml
+  - path: product.yaml
 secretGenerator:
   - envs:
       - .env.secret
