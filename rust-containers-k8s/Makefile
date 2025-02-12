@@ -6,3 +6,6 @@ default:
 
 release:
 	cargo build --release
+
+docker:
+	docker build -t rust-containers-k8s .
