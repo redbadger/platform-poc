@@ -36,6 +36,7 @@ async fn main() -> anyhow::Result<()> {
 
     let http_handler = spawn(server::create(config.port));
     let message_handler = spawn(async move {
+        info!("Starting message handler");
         let service = Service::new(TracingLogger);
 
         let client = async_nats::connect(config.nats_url).await?;

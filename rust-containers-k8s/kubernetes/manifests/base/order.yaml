@@ -32,6 +32,8 @@ spec:
                 secretKeyRef:
                   name: platform-poc-secrets
                   key: nats_url
+            - name: INVENTORY_URL
+              value: "http://inventory-service.default.svc.cluster.local:8080/api/inventory"
           readinessProbe:
             httpGet:
               path: /health

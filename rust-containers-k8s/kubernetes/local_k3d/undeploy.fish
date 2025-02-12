@@ -23,6 +23,3 @@ end
 
 section "undeploying platform-poc"
 kubectl delete -k $SCRIPT_DIR/../manifests/overlays/local
-
-section "starting port forwarders"
-stop inventory

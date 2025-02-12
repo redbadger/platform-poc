@@ -8,7 +8,13 @@ set --local SCRIPT_DIR (dirname (realpath (status -f)))
 
 cd $SCRIPT_DIR/../..
 
-for service in *-service
+set -l services (ls -d *-service)
+
+if test -n "$argv[1]"
+    set services $argv[1]
+end
+
+for service in $services
     set --local tag "$host/$project/$service:$semver"
 
     echo Building $tag

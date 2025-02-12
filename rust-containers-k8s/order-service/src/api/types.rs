@@ -17,12 +17,12 @@ pub struct OrderPlaceEvent {
     pub order_number: Uuid,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 pub struct OrderRequest {
     pub items: Vec<LineItemRequest>,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 pub struct LineItemRequest {
     pub sku: String,
     pub price: f32,

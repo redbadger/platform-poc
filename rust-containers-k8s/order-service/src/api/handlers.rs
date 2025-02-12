@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use axum::{debug_handler, extract::State, http::StatusCode, response::Result, Json};
+use tracing::info;
 
 use super::{
     server::AppState,
@@ -66,13 +67,13 @@ pub async fn create_order(
     State(state): State<Arc<AppState>>,
     Json(payload): Json<OrderRequest>,
 ) -> Result<String> {
+    info!("Creating order: {:?}", payload);
     let query: Vec<(String, String)> = payload
         .items
         .iter()
         .map(|i| ("skuCode".to_string(), i.sku.clone()))
         .collect();
-    //  call inventory service;
-    // takes a request of a list of order line items, checks they are all in stock (http call to the inventory service) and if so, creates an order entry in the database
+    // call inventory service to check stock
     let client = reqwest::Client::new();
     let all_in_stock = client
         .get(&state.config.inventory_url)
@@ -85,6 +86,8 @@ pub async fn create_order(
         .map_err(internal_error)?
         .iter()
         .all(|i| i.is_in_stock);
+
+    info!("All in stock: {}", all_in_stock);
 
     if all_in_stock {
         let order: Order = payload.into();
