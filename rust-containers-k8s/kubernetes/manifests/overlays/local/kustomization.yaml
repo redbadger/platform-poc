@@ -4,7 +4,8 @@ resources:
   - ../../base
 patches:
   - path: inventory.yaml
+  - path: notification.yaml
 secretGenerator:
   - envs:
       - .env.secret
-    name: postgres-db-secrets
+    name: platform-poc-secrets

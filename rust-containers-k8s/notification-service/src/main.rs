@@ -1,12 +1,14 @@
-use ::futures::StreamExt as _;
 use dotenv::dotenv;
+use futures::{future::join_all, StreamExt as _};
+use tokio::spawn;
+use tracing::info;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+
 use notification_service::{
     config::Config,
     core::{Logger, OrderPlacedEvent, Service},
+    server,
 };
-
-use tracing::info;
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 struct TracingLogger;
 
@@ -32,19 +34,28 @@ async fn main() -> anyhow::Result<()> {
     let config = Config::new()?;
     info!("{:?}", config);
 
-    let service = Service::new(TracingLogger);
+    let http_handler = spawn(server::create(config.port));
+    let message_handler = spawn(async move {
+        let service = Service::new(TracingLogger);
 
-    let client = async_nats::connect(config.nats_url).await?;
+        let client = async_nats::connect(config.nats_url).await?;
 
-    let mut subscriber = client.subscribe(config.nats_topic).await?;
+        let mut subscriber = client.subscribe(config.nats_topic).await?;
 
-    while let Some(message) = subscriber.next().await {
-        if let Ok(order) = serde_json::from_slice::<OrderPlacedEvent>(&message.payload) {
-            service.recv(order);
-        } else {
-            info!("Error decoding notification order: {:?}", message);
+        while let Some(message) = subscriber.next().await {
+            if let Ok(order) = serde_json::from_slice::<OrderPlacedEvent>(&message.payload) {
+                service.recv(order);
+            } else {
+                info!("Error decoding notification order: {:?}", message);
+            }
         }
-    }
 
-    Ok(())
+        anyhow::Result::<()>::Ok(())
+    });
+
+    join_all([http_handler, message_handler])
+        .await
+        .into_iter()
+        .flatten()
+        .collect()
 }

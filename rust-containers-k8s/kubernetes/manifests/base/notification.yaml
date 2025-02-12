@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: inventory-service
+  name: notification-service
   labels:
-    service: inventory
+    service: notification
 spec:
   replicas: 1
   selector:
     matchLabels:
-      service: inventory
+      service: notification
   template:
     metadata:
       labels:
-        service: inventory
+        service: notification
     spec:
       containers:
-        - name: inventory-service
+        - name: notification-service
           imagePullPolicy: Always
           ports:
             - name: http
@@ -24,11 +24,11 @@ spec:
           env:
             - name: PORT
               value: "8082"
-            - name: DATABASE_URL
+            - name: NATS_URL
               valueFrom:
                 secretKeyRef:
                   name: platform-poc-secrets
-                  key: db_url_inventory_service
+                  key: nats_url
           readinessProbe:
             httpGet:
               path: /health
@@ -38,9 +38,9 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: inventory-service
+  name: notification-service
   labels:
-    service: inventory
+    service: notification
 spec:
   type: ClusterIP
   ports:
@@ -49,4 +49,4 @@ spec:
       protocol: TCP
       name: http
   selector:
-    service: inventory
+    service: notification
