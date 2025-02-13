@@ -1,5 +1,4 @@
 use dotenv::dotenv;
-use firestore::FirestoreDb;
 use product_service::{api::server, config::Config};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -19,9 +18,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     tracing::info!("{:?}", config);
 
-    let db = FirestoreDb::new(&config.gcp_project_id).await?;
-
-    server::create(config, db).await?;
+    server::create(config).await?;
 
     Ok(())
 }

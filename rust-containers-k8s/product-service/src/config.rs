@@ -4,12 +4,12 @@ use serde::Deserialize;
 pub struct Config {
     #[serde(default = "defaults::port")]
     pub port: u16,
-    pub gcp_project_id: String,
+    pub redis_url: String,
 }
 
 mod defaults {
     pub const fn port() -> u16 {
-        8080
+        80
     }
 }
 

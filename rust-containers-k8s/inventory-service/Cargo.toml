@@ -5,15 +5,15 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
-anyhow = "1.0.75"
-axum = { version = "0.7.2", features = ["json", "macros", "query"] }
-axum-extra = { version = "0.9.0", features = ["query"] }
-dotenv = "0.15.0"
-envy = "0.4.2"
-reqwest = { version = "0.11.23", features = ["json"] }
-serde = { version = "1.0.193", features = ["derive"] }
-sqlx = { version = "0.7.3", features = ["runtime-tokio", "postgres"] }
-tokio = { version = "1.35.0", features = ["full"] }
-tower-http = { version = "0.5.0", features = ["trace"] }
-tracing = "0.1.40"
-tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
+anyhow.workspace = true
+axum = { version = "0.8.1", features = ["json", "macros", "query"] }
+axum-extra = { version = "0.10.0", features = ["query"] }
+dotenv.workspace = true
+envy.workspace = true
+reqwest = { version = "0.12.12", features = ["json"] }
+serde = { version = "1.0.217", features = ["derive"] }
+sqlx = { version = "0.8.3", features = ["runtime-tokio", "postgres"] }
+tokio = { version = "1.43.0", features = ["full"] }
+tower-http = { version = "0.6.2", features = ["trace"] }
+tracing = "0.1.41"
+tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }

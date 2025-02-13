@@ -2,14 +2,20 @@ use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]
 pub struct Config {
-    pub kafka_url: String,
+    pub nats_url: String,
     #[serde(default = "defaults::topic")]
-    pub kafka_topic: String,
+    pub nats_topic: String,
+    #[serde(default = "defaults::port")]
+    pub port: u16,
 }
 
 mod defaults {
     pub fn topic() -> String {
         "orders".to_string()
+    }
+
+    pub const fn port() -> u16 {
+        80
     }
 }
 

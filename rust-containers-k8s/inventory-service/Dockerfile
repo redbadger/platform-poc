@@ -1,42 +1,31 @@
-####################################################################################################
-## Builder
-####################################################################################################
 FROM rust:latest AS builder
-
-# Create appuser
-ENV USER=appuser
-ENV UID=10001
-
-RUN adduser \
-  --disabled-password \
-  --gecos "" \
-  --home "/nonexistent" \
-  --shell "/sbin/nologin" \
-  --no-create-home \
-  --uid "${UID}" \
-  "${USER}"
-
 WORKDIR /app
 
-COPY ./ .
+# cache dependencies
+COPY Cargo.toml Cargo.lock ./
+COPY inventory-service/Cargo.toml ./inventory-service/
+COPY notification-service/Cargo.toml ./notification-service/
+COPY order-service/Cargo.toml ./order-service/
+COPY product-service/Cargo.toml ./product-service/
+RUN for s in inventory notification order product;do mkdir $s-service/src && echo 'fn main() {}' > $s-service/src/main.rs; done
+RUN cargo build --release --package inventory-service
 
-RUN cargo build --release
+# build the app
+COPY . .
+RUN cargo build --release --package inventory-service
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid 10001 \
+    appuser
 
-####################################################################################################
-## Final image
-####################################################################################################
 FROM debian:bookworm-slim
-
-# Import from builder.
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/group /etc/group
-
 WORKDIR /app
-
-# Copy our build
 COPY --from=builder /app/target/release/inventory-service ./
-
-# Use an unprivileged user.
 USER appuser:appuser
-
 CMD ["/app/inventory-service"]

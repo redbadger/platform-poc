@@ -23,19 +23,26 @@ pub async fn get_inventory(
     State(state): State<Arc<AppState>>,
     Query(params): Query<InventoryQueryParams>,
 ) -> Result<Json<Vec<GetInventoryResponse>>> {
-    let query = &params.sku_code;
+    let query = params.sku_code;
 
     let mut result = Vec::new();
-    for sku in query.iter() {
-        let row: Option<(i32,)> =
-            sqlx::query_as("SELECT quantity FROM public.t_inventory WHERE sku_code = $1;")
-                .bind(sku)
-                .fetch_optional(&state.pool)
-                .await
-                .map_err(internal_error)?;
-        let is_in_stock = row.map(|(quantity,)| quantity > 0).unwrap_or(false);
+    struct Row {
+        quantity: Option<i32>,
+    }
+    for sku_code in query {
+        let row = sqlx::query_as!(
+            Row,
+            "SELECT quantity FROM public.t_inventory WHERE sku_code = $1;",
+            sku_code
+        )
+        .fetch_optional(&state.pool)
+        .await
+        .map_err(internal_error)?;
+        let is_in_stock = row
+            .map(|row| row.quantity.map(|q| q > 0).unwrap_or(false))
+            .unwrap_or(false);
         result.push(GetInventoryResponse {
-            sku_code: sku.to_string(),
+            sku_code,
             is_in_stock,
         });
     }

@@ -5,16 +5,16 @@ pub struct Config {
     #[serde(default = "defaults::port")]
     pub port: u16,
     pub database_url: String,
-    pub kafka_url: String,
+    pub nats_url: String,
     #[serde(default = "defaults::topic")]
-    pub kafka_topic: String,
+    pub nats_topic: String,
     #[serde(default = "defaults::inventory_url")]
     pub inventory_url: String,
 }
 
 mod defaults {
     pub const fn port() -> u16 {
-        8081
+        80
     }
 
     pub fn topic() -> String {

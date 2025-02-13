@@ -15,9 +15,9 @@ on:
       - "rust-containers-k8s/**"
 
 jobs:
-  build-and-push:
+  build:
     if: github.event.pull_request.draft == false
-    name: Build, push and deploy 🏗️🚀
+    name: Build
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -26,24 +26,12 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
-      # - name: get google-cloud-sdk-gke-gcloud-auth-plugin
-      #   uses: cobraz/setup-gke-gcloud-auth-plugin@v1
 
-      # - name: Authenticate with GCR
-      #   run: |
-      #     echo ${{ secrets.GCR_KEY_RUST }} | base64 --decode > gcr-key.json
-      #     gcloud auth activate-service-account --key-file=gcr-key.json
-      #     gcloud auth configure-docker europe-west2-docker.pkg.dev
-      #     gcloud container clusters get-credentials platform-poc-rust-cluster --location europe-west2 --project platform-poc-rust
+      - name: Install fish
+        run: |
+          sudo apt-add-repository ppa:fish-shell/release-3
+          sudo apt update
+          sudo apt install fish
 
-      # - name: Build and push Docker images
-      #   run: ./scripts/build_and_push.sh
-      - name: Build Docker images
-        run: ./scripts/build.sh
-
-      # - name: Set short sha
-      #   id: vars
-      #   run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-
-      # - name: run helm upgrade
-      #   run: ./scripts/helm_upgrade.sh ${{ steps.vars.outputs.sha_short }}
+      - name: Build images
+        run: ./docker-build.fish
