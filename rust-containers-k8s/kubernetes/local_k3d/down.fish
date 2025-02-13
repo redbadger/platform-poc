@@ -13,6 +13,3 @@ brew services stop postgresql@15
 
 section "stopping nats-server"
 brew services stop nats-server
-
-section "stopping cluster"
-k3d cluster stop platform-poc

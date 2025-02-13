@@ -13,6 +13,3 @@ brew services start postgresql@15
 
 section "starting nats-server"
 brew services start nats-server
-
-section "starting K8s cluster"
-k3d cluster start platform-poc

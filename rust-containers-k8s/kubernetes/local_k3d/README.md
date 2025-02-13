@@ -14,19 +14,19 @@
    sudo vim /etc/hosts
    ```
 
-1. Start NATS, redis, and postgres
+1. Start redis, postgres, NATS
 
    ```fish
    ./up.fish
    ```
 
-1. Build the platform-poc application
+1. Build the platform-poc application, and push to local registry
 
    ```fish
     ./build.sh
    ```
 
-1. Install our platform-poc application
+1. Install the platform-poc application
 
    ```fish
    ./deploy.fish
@@ -38,7 +38,7 @@
    ./undeploy.fish
    ```
 
-1. Stop the cluster
+1. Stop the redis, postgres, NATS
 
    ```fish
     ./down.fish
@@ -48,4 +48,12 @@
 
    ```fish
      ./destroy.fish
+   ```
+
+## Test
+
+1. Run the test
+
+   ```fish
+   ./test.fish
    ```
