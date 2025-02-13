@@ -1,9 +1,10 @@
 package com.redbadger.notificationservice;
 
 import lombok.extern.slf4j.Slf4j;
+import org.mvnsearch.spring.boot.nats.annotation.NatsSubscriber;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.messaging.handler.annotation.Payload;
 
 @SpringBootApplication
 @Slf4j
@@ -13,9 +14,12 @@ public class NotificationServiceApplication {
         SpringApplication.run(NotificationServiceApplication.class, args);
     }
 
-    @KafkaListener(topics = "notificationTopic")
-    public void handleNotification(OrderPlacedEvent orderPlacedEvent) {
+    @NatsSubscriber(subject = "orders")
+    public void handler(@Payload OrderPlacedEvent orderPlacedEvent) {
         // send out an email notification
-        log.info("Received Notification for Order - {}", orderPlacedEvent.getOrderNumber());
+        log.info(
+            "Received Notification for Order - {}",
+            orderPlacedEvent.getOrderNumber()
+        );
     }
 }

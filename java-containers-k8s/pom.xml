@@ -60,6 +60,9 @@
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
                         </exclude>
+                        <exclude>
+                            <groupId>nats.io</groupId>
+                        </exclude>
                     </excludes>
                 </configuration>
             </plugin>
