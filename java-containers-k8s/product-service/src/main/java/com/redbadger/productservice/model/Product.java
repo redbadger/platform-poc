@@ -4,12 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
-import org.springframework.cloud.gcp.data.datastore.core.mapping.Field;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.redis.core.RedisHash;
 
-
-@Entity(name = "products")
+@RedisHash("product")
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -17,8 +15,8 @@ import org.springframework.data.annotation.Id;
 public class Product {
 
     @Id
-    @Field(name = "product_id")
     private Long id;
+
     private String name;
     private String description;
     private int price;
