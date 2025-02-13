@@ -8,7 +8,7 @@ This project is heavily inspired by [work in this repo](https://github.com/SaiUp
 
 There are 4 services described in the diagram below
 
-![high level architecture](../platform-poc.png)
+![high level architecture](../platform-poc.webp)
 
 1. **Product-service** - uses a Redis store to persist the product catalog.
    The products can be queried as a list and new products can be created.
