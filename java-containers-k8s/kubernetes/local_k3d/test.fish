@@ -17,4 +17,13 @@ curl -vv 'localhost:8081/api/inventory?skuCode=iphone_13_red'
 section "place an order"
 curl -vv 'localhost:8081/api/order' \
     -H 'content-type: application/json' \
-    -d '{"items":[{"sku":"iphone_13","price":1,"quantity":1}]}'
+    -d '{
+      "orderLineItemsDtoList": [
+          {
+              "id": "123",
+              "skuCode": "iphone_13",
+              "price": 200,
+              "quantity": 1
+          }
+      ]
+  }'

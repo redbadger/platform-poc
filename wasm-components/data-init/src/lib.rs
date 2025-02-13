@@ -9,9 +9,9 @@ use uuid::Uuid;
 use exports::platform_poc::data_init::init_funcs::Guest;
 use wasi::{
     keyvalue::store::open,
-    logging::logging::{log, Level},
+    logging::logging::{Level, log},
 };
-use wasmcloud::postgres::query::{query, PgValue};
+use wasmcloud::postgres::query::{PgValue, query};
 
 struct Component;
 export!(Component);
