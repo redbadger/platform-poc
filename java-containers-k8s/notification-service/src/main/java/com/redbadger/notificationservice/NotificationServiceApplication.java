@@ -1,10 +1,11 @@
 package com.redbadger.notificationservice;
 
+import io.nats.client.Message;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.SerializationUtils;
 import org.mvnsearch.spring.boot.nats.annotation.NatsSubscriber;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.messaging.handler.annotation.Payload;
 
 @SpringBootApplication
 @Slf4j
@@ -15,8 +16,11 @@ public class NotificationServiceApplication {
     }
 
     @NatsSubscriber(subject = "orders")
-    public void handler(@Payload OrderPlacedEvent orderPlacedEvent) {
-        // send out an email notification
+    public void handler(Message msg) {
+        byte[] bytes = msg.getData();
+        OrderPlacedEvent orderPlacedEvent = SerializationUtils.deserialize(
+            bytes
+        );
         log.info(
             "Received Notification for Order - {}",
             orderPlacedEvent.getOrderNumber()
