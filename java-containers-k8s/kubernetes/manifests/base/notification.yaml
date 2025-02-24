@@ -29,6 +29,6 @@ spec:
                   key: nats_url
           readinessProbe:
             httpGet:
-              path: /health
+              path: /actuator/health
               port: 80
             initialDelaySeconds: 10

@@ -6,9 +6,9 @@ set -x PORT 8092
 
 set -x INVENTORY_URL http://localhost:8090/api/inventory
 
-set -x POSTGRES_URL jdbc:postgresql://localhost/order-service
-set -x POSTGRES_USERNAME order-service
-set -x POSTGRES_PASSWORD commerce
+set -x DATABASE_URL jdbc:postgresql://localhost/order-service
+set -x DATABASE_USERNAME order-service
+set -x DATABASE_PASSWORD commerce
 
 set -x NATS_URL nats://localhost:4222
 

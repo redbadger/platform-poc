@@ -27,9 +27,19 @@ spec:
                 secretKeyRef:
                   name: platform-poc-secrets
                   key: db_url_inventory_service
+            - name: DATABASE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: platform-poc-secrets
+                  key: db_usr_inventory_service
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: platform-poc-secrets
+                  key: db_pwd_inventory_service
           readinessProbe:
             httpGet:
-              path: /health
+              path: /actuator/health
               port: 80
             initialDelaySeconds: 10
 ---

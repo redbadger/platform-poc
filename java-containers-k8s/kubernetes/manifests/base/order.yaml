@@ -27,6 +27,16 @@ spec:
                 secretKeyRef:
                   name: platform-poc-secrets
                   key: db_url_order_service
+            - name: DATABASE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: platform-poc-secrets
+                  key: db_usr_order_service
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: platform-poc-secrets
+                  key: db_pwd_order_service
             - name: NATS_URL
               valueFrom:
                 secretKeyRef:
@@ -36,7 +46,7 @@ spec:
               value: "http://inventory-service.default.svc.cluster.local:8080/api/inventory"
           readinessProbe:
             httpGet:
-              path: /health
+              path: /actuator/health
               port: 80
             initialDelaySeconds: 10
 ---

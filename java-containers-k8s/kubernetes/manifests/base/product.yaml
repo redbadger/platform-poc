@@ -22,14 +22,19 @@ spec:
               containerPort: 80
               protocol: TCP
           env:
-            - name: REDIS_URL
+            - name: REDIS_HOST
               valueFrom:
                 secretKeyRef:
                   name: platform-poc-secrets
-                  key: redis_url
+                  key: redis_host
+            - name: REDIS_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: platform-poc-secrets
+                  key: redis_port
           readinessProbe:
             httpGet:
-              path: /health
+              path: /actuator/health
               port: 80
             initialDelaySeconds: 10
 ---

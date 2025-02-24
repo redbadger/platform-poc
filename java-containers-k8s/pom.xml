@@ -91,7 +91,7 @@
                         <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
                     </container>
                     <from>
-                        <image>eclipse-temurin:17.0.4.1_1-jre</image>
+                        <image>eclipse-temurin:17-jre</image>
                         <platforms>
                             <platform>
                                 <architecture>amd64</architecture>
