@@ -33,6 +33,3 @@ stop nats
 
 section "stopping wash-ui"
 stop wash-ui
-
-section "stopping cluster"
-k3d cluster stop platform-poc

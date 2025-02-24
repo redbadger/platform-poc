@@ -34,13 +34,6 @@ brew services start redis
 section "starting postgresql@15"
 brew services start postgresql@15
 
-section "starting local registry"
-# local registry on port 5001
-$SCRIPT_DIR/../registry.fish up
-
-section "starting K8s cluster"
-k3d cluster start platform-poc
-
 set wasmcloud_host (
     kubectl get pod --selector app.kubernetes.io/instance=wasmcloud-host -o name
 )
