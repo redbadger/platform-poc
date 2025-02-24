@@ -1,4 +1,4 @@
-use crate::api::handlers::{create_order, get_orders, health, root};
+use crate::api::handlers;
 use crate::config::Config;
 use async_nats::Client;
 use axum::{routing::get, routing::post, Router};
@@ -27,10 +27,9 @@ pub async fn create(config: Config, pool: Pool<Postgres>) -> anyhow::Result<()> 
     });
 
     let app = Router::new()
-        .route("/", get(root))
-        .route("/health", get(health))
-        .route("/api/order", get(get_orders))
-        .route("/api/order", post(create_order))
+        .route("/health", get(handlers::health))
+        .route("/api/order", get(handlers::get_orders))
+        .route("/api/order", post(handlers::create_order))
         .with_state(state);
 
     let socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), port);
