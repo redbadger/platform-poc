@@ -61,7 +61,7 @@ pub async fn get_orders(State(state): State<Arc<AppState>>) -> Result<Json<Vec<O
 pub async fn create_order(
     State(state): State<Arc<AppState>>,
     Json(payload): Json<OrderRequest>,
-) -> Result<String> {
+) -> Result<(StatusCode, String)> {
     let query: Vec<(String, String)> = payload
         .items
         .iter()
@@ -149,12 +149,18 @@ pub async fn create_order(
             .await
             .map_err(internal_error)?;
 
-        Ok(format!(
-            "Order Number {order_id} ({order_number}) Placed Successfully",
-            order_number = order.order_number
+        Ok((
+            StatusCode::CREATED,
+            format!(
+                "Order Number {order_id} ({order_number}) Placed Successfully",
+                order_number = order.order_number
+            ),
         ))
     } else {
-        Ok("Product is not in stock, please try again later".to_string())
+        Ok((
+            StatusCode::BAD_REQUEST,
+            "Product is not in stock, please try again later".to_string(),
+        ))
     }
 }
 

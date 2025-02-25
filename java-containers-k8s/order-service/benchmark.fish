@@ -1,6 +1,7 @@
 #!/usr/bin/env fish
 
 set -l endpoint "http://localhost:8081"
+
 # place orders
 oha "$endpoint/api/order" \
     -c 100 \
