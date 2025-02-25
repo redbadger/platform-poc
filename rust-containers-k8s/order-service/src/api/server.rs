@@ -12,18 +12,20 @@ use tokio::net::TcpListener;
 pub struct AppState {
     pub config: Config,
     pub pool: Pool<Postgres>,
-    pub client: Client,
+    pub nats_client: Client,
+    pub http_client: reqwest::Client,
 }
 
 pub async fn create(config: Config, pool: Pool<Postgres>) -> anyhow::Result<()> {
     let port = config.port;
 
-    let client = async_nats::connect(&config.nats_url).await?;
-
+    let nats_client = async_nats::connect(&config.nats_url).await?;
+    let http_client = reqwest::Client::new();
     let state = Arc::new(AppState {
         config,
         pool,
-        client,
+        nats_client,
+        http_client,
     });
 
     let app = Router::new()

@@ -68,8 +68,8 @@ pub async fn create_order(
         .map(|i| ("skuCode".to_string(), i.sku.clone()))
         .collect();
     // call inventory service to check stock
-    let client = reqwest::Client::new();
-    let all_in_stock = client
+    let all_in_stock = state
+        .http_client
         .get(&state.config.inventory_url)
         .query(&query)
         .send()
@@ -144,7 +144,7 @@ pub async fn create_order(
         .map_err(internal_error)?;
 
         state
-            .client
+            .nats_client
             .publish(state.config.nats_topic.clone(), bytes.into())
             .await
             .map_err(internal_error)?;
