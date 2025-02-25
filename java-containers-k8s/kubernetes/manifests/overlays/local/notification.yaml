@@ -1,0 +1,10 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+spec:
+  template:
+    spec:
+      containers:
+        - name: notification-service
+          image: k3d-platform-poc.localhost:5001/platform-poc-java/notification-service:0.1.0

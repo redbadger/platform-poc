@@ -121,7 +121,7 @@ pub async fn get_all_products(
 pub async fn create_product(
     State(state): State<Arc<Mutex<AppState>>>,
     Json(payload): Json<ProductRequest>,
-) -> Result<()> {
+) -> Result<StatusCode> {
     let product: Product = payload.into();
     state
         .lock()
@@ -131,7 +131,7 @@ pub async fn create_product(
         .await
         .map_err(internal_error)?;
 
-    Ok(())
+    Ok(StatusCode::CREATED)
 }
 
 /// Utility function for mapping any error into a `500 Internal Server Error`

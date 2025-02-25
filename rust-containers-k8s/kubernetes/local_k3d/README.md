@@ -1,4 +1,4 @@
-# Platform PoC Wasm components in wasmCloud on a local K3d cluster
+# Platform PoC Rust containers in a local k3d kubernetes cluster
 
 1. Create the cluster with a registry
 

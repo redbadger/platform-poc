@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-service
+  labels:
+    service: product
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: product
+  template:
+    metadata:
+      labels:
+        service: product
+    spec:
+      containers:
+        - name: product-service
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          env:
+            - name: REDIS_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: platform-poc-secrets
+                  key: redis_host
+            - name: REDIS_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: platform-poc-secrets
+                  key: redis_port
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 80
+            initialDelaySeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-service
+  labels:
+    service: product
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8082
+      targetPort: 80
+      protocol: TCP
+  selector:
+    service: product
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: product-service
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /api/product
+            pathType: Prefix
+            backend:
+              service:
+                name: product-service
+                port:
+                  number: 8082

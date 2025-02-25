@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use axum::{debug_handler, extract::State, http::StatusCode, response::Result, Json};
-use tracing::info;
 
 use super::{
     server::AppState,
@@ -11,10 +10,6 @@ use crate::{
     api::types::{InventoryResponse, OrderRequest},
     model::Order,
 };
-
-pub async fn root() -> &'static str {
-    "Hello, World!"
-}
 
 #[debug_handler]
 pub async fn get_orders(State(state): State<Arc<AppState>>) -> Result<Json<Vec<Order>>> {
@@ -66,16 +61,15 @@ pub async fn get_orders(State(state): State<Arc<AppState>>) -> Result<Json<Vec<O
 pub async fn create_order(
     State(state): State<Arc<AppState>>,
     Json(payload): Json<OrderRequest>,
-) -> Result<String> {
-    info!("Creating order: {:?}", payload);
+) -> Result<(StatusCode, String)> {
     let query: Vec<(String, String)> = payload
         .items
         .iter()
         .map(|i| ("skuCode".to_string(), i.sku.clone()))
         .collect();
     // call inventory service to check stock
-    let client = reqwest::Client::new();
-    let all_in_stock = client
+    let all_in_stock = state
+        .http_client
         .get(&state.config.inventory_url)
         .query(&query)
         .send()
@@ -86,8 +80,6 @@ pub async fn create_order(
         .map_err(internal_error)?
         .iter()
         .all(|i| i.is_in_stock);
-
-    info!("All in stock: {}", all_in_stock);
 
     if all_in_stock {
         let order: Order = payload.into();
@@ -152,17 +144,23 @@ pub async fn create_order(
         .map_err(internal_error)?;
 
         state
-            .client
+            .nats_client
             .publish(state.config.nats_topic.clone(), bytes.into())
             .await
             .map_err(internal_error)?;
 
-        Ok(format!(
-            "Order Number {order_id} ({order_number}) Placed Successfully",
-            order_number = order.order_number
+        Ok((
+            StatusCode::CREATED,
+            format!(
+                "Order Number {order_id} ({order_number}) Placed Successfully",
+                order_number = order.order_number
+            ),
         ))
     } else {
-        Ok("Product is not in stock, please try again later".to_string())
+        Ok((
+            StatusCode::BAD_REQUEST,
+            "Product is not in stock, please try again later".to_string(),
+        ))
     }
 }
 

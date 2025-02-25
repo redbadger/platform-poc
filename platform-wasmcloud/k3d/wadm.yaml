@@ -53,7 +53,7 @@ spec:
       traits:
         - type: spreadscaler
           properties:
-            instances: 100
+            instances: 200
         - type: link
           properties:
             namespace: platform-poc
@@ -91,7 +91,7 @@ spec:
       traits:
         - type: spreadscaler
           properties:
-            instances: 100
+            instances: 200
         - type: link
           properties:
             namespace: wasi
@@ -112,7 +112,7 @@ spec:
       traits:
         - type: spreadscaler
           properties:
-            instances: 100
+            instances: 200
         - type: link
           properties:
             namespace: wasmcloud
@@ -138,7 +138,7 @@ spec:
       traits:
         - type: spreadscaler
           properties:
-            instances: 100
+            instances: 200
 
     - name: orders-service
       type: component
@@ -148,7 +148,7 @@ spec:
       traits:
         - type: spreadscaler
           properties:
-            instances: 100
+            instances: 200
         - type: link
           properties:
             namespace: wasmcloud

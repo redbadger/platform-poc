@@ -8,9 +8,7 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::registry()
         .with(
-            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
-                "order_service=debug,tower_http=debug,axum::rejection=trace".into()
-            }),
+            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "info".into()),
         )
         .with(tracing_subscriber::fmt::layer())
         .init();
@@ -21,14 +19,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("{:?}", config);
 
     let pool = PgPoolOptions::new()
-        .max_connections(5)
+        .max_connections(20)
         .connect(&config.database_url)
         .await?;
-
-    sqlx::migrate!("./migrations")
-        .run(&pool)
-        .await
-        .expect("Couldn't run migrations");
 
     server::create(config, pool).await?;
     Ok(())
