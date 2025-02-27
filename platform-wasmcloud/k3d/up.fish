@@ -39,7 +39,7 @@ set wasmcloud_host (
 )
 
 section "forwarding ports"
-daemon http kubectl port-forward $wasmcloud_host 8080
+daemon http kubectl port-forward $wasmcloud_host 8081
 daemon nats kubectl port-forward svc/nats 4222 4223
 
 section "starting wash UI"

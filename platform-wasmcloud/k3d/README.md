@@ -15,7 +15,7 @@
 1. Start redis, postgres, wash ui and port forwarding
 
    ```fish
-   ../up.fish
+   ./up.fish
    ```
 
 1. Build the platform-poc application
