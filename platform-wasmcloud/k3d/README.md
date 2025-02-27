@@ -27,13 +27,13 @@
 1. Install our platform-poc application
 
    ```fish
-   kubectl apply -f ./wadm.yaml
+   ./deploy.fish
    ```
 
 1. Delete the application
 
    ```fish
-   kubectl delete -f ./wadm.yaml
+   ./undeploy.fish
    ```
 
 1. Stop the cluster

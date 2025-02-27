@@ -20,10 +20,6 @@ wash --version
 # └ wasmcloud   v1.6.1
 ```
 
-### Docker
-
-We use `docker` to start a k3d cluster and a local registry.
-
 ## run
 
 1. Create a platform environment.
@@ -34,7 +30,7 @@ We use `docker` to start a k3d cluster and a local registry.
    * the wash UI (http://localhost:3030/)
 
    ```bash
-   ./local/create.fish
+   ./create.fish
    ```
 
 1. Start up external services.
@@ -44,13 +40,13 @@ We use `docker` to start a k3d cluster and a local registry.
    * a local postgres server
 
    ```bash
-   ./local/up.fish
+   ./up.fish
    ```
 
 1. Build (and sign) the components, pushing them to the local registry
 
    ```bash
-   ./build_and_push.fish
+   ../build_and_push.fish
    ```
 
 1. Deploy the components with `wadm`

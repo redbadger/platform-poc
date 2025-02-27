@@ -8,7 +8,7 @@ function section
 end
 
 section "undeploying wasm components"
-$SCRIPT_DIR/../undeploy.fish
+$SCRIPT_DIR/undeploy.fish
 
 section "stopping wasmcloud, NATS and wadm"
 wash down --all
