@@ -14,6 +14,7 @@ section "stopping NATS in case it's running locally"
 brew services stop nats-server
 
 section "starting wasmcloud, NATS and wadm"
+set -x WASMCLOUD_EXPERIMENTAL_FEATURES "builtin-messaging-nats,builtin-http-server"
 wash up \
     --detached \
     --allow-latest \

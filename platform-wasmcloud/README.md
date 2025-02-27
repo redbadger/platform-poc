@@ -87,19 +87,19 @@ We use `docker` to start a k3d cluster and a local registry.
 
    ```bash
    # data init
-   curl 'localhost:8080/data-init/all'
+   curl 'localhost:8081/api/data-init/all'
 
    # products
-   curl 'localhost:8080/products'
+   curl 'localhost:8081/api/products'
 
    # inventory
-   curl 'localhost:8080/inventory/?skus=ENG-V8-500'
+   curl 'localhost:8081/api/inventory/?skus=ENG-V8-500'
 
    # orders
-   curl 'localhost:8080/orders'
+   curl 'localhost:8081/api/orders'
 
    # create order (fish shell)
-   curl localhost:8080/orders -d '
+   curl localhost:8081/api/orders -d '
    [
      {
        "sku": "WND-WPR-AW",
@@ -118,7 +118,7 @@ We use `docker` to start a k3d cluster and a local registry.
 ### benchmark
 
 ```fish
-oha 'http://localhost:8080/orders' \
+oha 'http://localhost:8081/api/orders' \
     -c 100 \
     -n 10000 \
     -m POST \

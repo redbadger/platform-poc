@@ -160,12 +160,12 @@ spec:
     - name: http-server
       type: capability
       properties:
-        image: ghcr.io/wasmcloud/http-server:0.25.0
+        image: wasmcloud+builtin://http-server
         id: http-server
         config:
           - name: default-http
             properties:
-              address: 0.0.0.0:8080
+              address: 0.0.0.0:8081
       traits:
         - type: link
           properties:
@@ -206,7 +206,7 @@ spec:
     - name: nats
       type: capability
       properties:
-        image: ghcr.io/wasmcloud/messaging-nats:0.24.0
+        image: wasmcloud+builtin://messaging-nats
         id: nats
         config:
           - name: default-nats
