@@ -25,14 +25,7 @@ spec:
             target:
               name: sqldb-postgres
               config:
-                - name: data-init-pg
-                  properties:
-                    POSTGRES_HOST: host.docker.internal
-                    POSTGRES_PORT: "5432"
-                    POSTGRES_USERNAME: postgres
-                    POSTGRES_PASSWORD: postgres
-                    POSTGRES_DATABASE: postgres
-                    POSTGRES_TLS_REQUIRED: "false"
+                - name: platform_poc-default_postgres
         - type: link
           properties:
             namespace: wasi
@@ -41,9 +34,7 @@ spec:
             target:
               name: kv-redis
               config:
-                - name: data-init-redis
-                  properties:
-                    url: "redis://host.docker.internal:6379"
+                - name: platform_poc-default_redis
 
     - name: http-controller
       type: component
@@ -53,7 +44,7 @@ spec:
       traits:
         - type: spreadscaler
           properties:
-            instances: 200
+            instances: 1000
         - type: link
           properties:
             namespace: platform-poc
@@ -91,7 +82,7 @@ spec:
       traits:
         - type: spreadscaler
           properties:
-            instances: 200
+            instances: 1000
         - type: link
           properties:
             namespace: wasi
@@ -100,9 +91,7 @@ spec:
             target:
               name: kv-redis
               config:
-                - name: products-redis
-                  properties:
-                    url: "redis://host.docker.internal:6379"
+                - name: platform_poc-default_redis
 
     - name: inventory-service
       type: component
@@ -112,7 +101,7 @@ spec:
       traits:
         - type: spreadscaler
           properties:
-            instances: 200
+            instances: 1000
         - type: link
           properties:
             namespace: wasmcloud
@@ -121,14 +110,7 @@ spec:
             target:
               name: sqldb-postgres
               config:
-                - name: inventory-pg
-                  properties:
-                    POSTGRES_HOST: host.docker.internal
-                    POSTGRES_PORT: "5432"
-                    POSTGRES_USERNAME: postgres
-                    POSTGRES_PASSWORD: postgres
-                    POSTGRES_DATABASE: postgres
-                    POSTGRES_TLS_REQUIRED: "false"
+                - name: platform_poc-default_postgres
 
     - name: notification-service
       type: component
@@ -138,7 +120,7 @@ spec:
       traits:
         - type: spreadscaler
           properties:
-            instances: 200
+            instances: 1000
 
     - name: orders-service
       type: component
@@ -148,7 +130,7 @@ spec:
       traits:
         - type: spreadscaler
           properties:
-            instances: 200
+            instances: 1000
         - type: link
           properties:
             namespace: wasmcloud
@@ -157,14 +139,7 @@ spec:
             target:
               name: sqldb-postgres
               config:
-                - name: orders-pg
-                  properties:
-                    POSTGRES_HOST: host.docker.internal
-                    POSTGRES_PORT: "5432"
-                    POSTGRES_USERNAME: postgres
-                    POSTGRES_PASSWORD: postgres
-                    POSTGRES_DATABASE: postgres
-                    POSTGRES_TLS_REQUIRED: "false"
+                - name: platform_poc-default_postgres
         - type: link
           properties:
             namespace: platform-poc
@@ -185,8 +160,12 @@ spec:
     - name: http-server
       type: capability
       properties:
-        image: ghcr.io/wasmcloud/http-server:0.25.0
+        image: ghcr.io/wasmcloud/http-server:0.26.0
         id: http-server
+        config:
+          - name: default-http
+            properties:
+              address: 0.0.0.0:8081
       traits:
         - type: link
           properties:
@@ -195,9 +174,7 @@ spec:
             interfaces: [incoming-handler]
             source:
               config:
-                - name: default-http
-                  properties:
-                    address: 0.0.0.0:8080
+                - name: platform_poc-default_http
             target:
               name: http-controller
 
@@ -206,18 +183,35 @@ spec:
       properties:
         image: ghcr.io/wasmcloud/keyvalue-redis:0.28.2
         id: kv-redis
+        config:
+          - name: default-redis
+            properties:
+              url: "redis://host.docker.internal:6379"
 
     - name: sqldb-postgres
       type: capability
       properties:
         image: ghcr.io/wasmcloud/sqldb-postgres:0.7.2
         id: sqldb-postgres
+        config:
+          - name: default-postgres
+            properties:
+              POSTGRES_HOST: host.docker.internal
+              POSTGRES_PORT: "5432"
+              POSTGRES_USERNAME: postgres
+              POSTGRES_PASSWORD: postgres
+              POSTGRES_DATABASE: postgres
+              POSTGRES_TLS_REQUIRED: "false"
 
     - name: nats
       type: capability
       properties:
-        image: ghcr.io/wasmcloud/messaging-nats:0.24.0
+        image: ghcr.io/wasmcloud/messaging-nats:0.25.0
         id: nats
+        config:
+          - name: default-nats
+            properties:
+              subscriptions: "platform-poc.order-notification"
       traits:
         - type: link
           properties:
@@ -226,8 +220,6 @@ spec:
             interfaces: [handler]
             source:
               config:
-                - name: default-nats
-                  properties:
-                    subscriptions: "platform-poc.order-notification"
+                - name: platform_poc-default_nats
             target:
               name: notification-service

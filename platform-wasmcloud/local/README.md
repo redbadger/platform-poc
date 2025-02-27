@@ -10,82 +10,92 @@ _Wasm components linked at runtime (via wRPC) and running in wasmCloud._
 
 ### wasmCloud
 
-Install `wash` with `brew install wasmcloud/wasmcloud/wash`.
+Install `wash`, e.g. with `brew install wasmcloud/wasmcloud/wash`.
 
 ```bash
 wash --version
-# wash          v0.38.0
+# wash          v0.39.0
 # ├ nats-server v2.10.20
-# ├ wadm        v0.19.0
-# └ wasmcloud   v1.4.2
+# ├ wadm        v0.20.2
+# └ wasmcloud   v1.6.1
 ```
-
-### Docker
-
-We use `docker` to start a local registry, so you will need to have it installed.
 
 ## run
 
-1. Start up a running environment.
+1. Create a platform environment.
 
    Starts:
-   * a local redis server
-   * a local postgres server
    * a local OCI registry
    * a single wasmCloud host, with NATS and `wadm` running
    * the wash UI (http://localhost:3030/)
 
    ```bash
-   ./local/up.fish
+   ./create.fish
+   ```
+
+1. Start up external services.
+
+   Starts:
+   * a local redis server
+   * a local postgres server
+
+   ```bash
+   ./up.fish
    ```
 
 1. Build (and sign) the components, pushing them to the local registry
 
    ```bash
-   ./build_and_push.fish
+   ../build_and_push.fish
    ```
 
 1. Deploy the components with `wadm`
 
    ```bash
-   ./start.fish
+   ./deploy.fish
    ```
 
 1. Redeploy the components with `wadm`
 
    ```bash
-   ./restart.fish
+   ./redeploy.fish
    ```
 
 1. Delete the application with `wadm`
 
    ```bash
-   ./stop.fish
+   ./undeploy.fish
    ```
 
-1. Stop the wasmCloud host
+1. Stop the external services
 
    ```bash
    ./local/down.fish
+   ```
+
+1. Destroy the registry and the wasmCloud host
+
+   ```bash
+   ./local/destroy.fish
    ```
 
 1. Test
 
    ```bash
    # data init
-   curl 'localhost:8080/data-init/all'
+   curl 'localhost:8081/api/data-init/all'
 
    # products
-   curl 'localhost:8080/products'
+   curl 'localhost:8081/api/products'
 
    # inventory
-   curl 'localhost:8080/inventory/?skus=ENG-V8-500'
+   curl 'localhost:8081/api/inventory/?skus=ENG-V8-500'
 
    # orders
-   curl 'localhost:8080/orders'
+   curl 'localhost:8081/api/orders'
 
    # create order (fish shell)
-   curl localhost:8080/orders -d '
+   curl localhost:8081/api/orders -d '
    [
      {
        "sku": "WND-WPR-AW",
@@ -104,7 +114,7 @@ We use `docker` to start a local registry, so you will need to have it installed
 ### benchmark
 
 ```fish
-oha 'http://localhost:8080/orders' \
+oha 'http://localhost:8081/api/orders' \
     -c 100 \
     -n 10000 \
     -m POST \

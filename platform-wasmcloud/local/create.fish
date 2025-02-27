@@ -1,11 +1,22 @@
 #!/usr/bin/env fish
 
-set --local SCRIPT_DIR (dirname (realpath (status -f)))
-
 function section
     echo
     string pad --right --char=— -w$COLUMNS "———— $argv ————"
 end
+
+section "starting registry"
+k3d registry create platform-poc.localhost --port 5001
+
+section "stopping NATS in case it's running locally"
+brew services stop nats-server
+
+section "starting wasmcloud, NATS and wadm"
+set -x WASMCLOUD_EXPERIMENTAL_FEATURES "builtin-messaging-nats,builtin-http-server"
+wash up \
+    --detached \
+    --allow-latest \
+    --allowed-insecure "localhost:5001"
 
 function daemon
     pushd /tmp
@@ -23,24 +34,10 @@ function daemon
     command nohup $command >{$name}.out 2>&1 &
     echo {$name}...
     echo $last_pid >{$name}.pid
-    sleep 0.1
+    sleep 0.5
     cat {$name}.out
     popd
 end
 
-section "starting redis"
-brew services start redis
-
-section "starting postgresql@15"
-brew services start postgresql@15
-
-set wasmcloud_host (
-    kubectl get pod --selector app.kubernetes.io/instance=wasmcloud-host -o name
-)
-
-section "forwarding ports"
-daemon http kubectl port-forward $wasmcloud_host 8081
-daemon nats kubectl port-forward svc/nats 4222 4223
-
-section "starting wash UI"
-daemon wash-ui wash ui
+section "starting wash-ui"
+daemon wash-ui wash ui -v 0.6.0

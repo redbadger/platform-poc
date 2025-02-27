@@ -4,7 +4,7 @@ metadata:
   name: wasmcloud-host
 spec:
   lattice: default
-  version: 1.5.1
+  version: 1.6.1
   hostReplicas: 1
   allowedInsecure:
     - "host.docker.internal:5001"
