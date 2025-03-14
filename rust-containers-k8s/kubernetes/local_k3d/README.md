@@ -3,7 +3,7 @@
 1. Create the cluster with a registry
 
    ```fish
-   ./create.fish
+   ../../../local_k3d/create.fish
    ```
 
 1. Add the registry to your local /etc/hosts
@@ -47,7 +47,7 @@
 1. Delete the cluster
 
    ```fish
-     ./destroy.fish
+     ../../../local_k3d/destroy.fish
    ```
 
 ## Test

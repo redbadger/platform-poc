@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                INSERT INTO t_orders_order_line_items_list (order_id, order_line_items_list_id)\n                VALUES ( $1, $2 )\n                ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "6bf59dda6e5db7bc3235366cb1a42a3e76b37bc85086fb71c1944d9d8bb5a38c"
+}

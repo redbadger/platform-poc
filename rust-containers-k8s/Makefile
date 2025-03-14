@@ -1,8 +1,10 @@
-.PHONY = default release
+.PHONY = default prepare release docker
 
-default:
-	cargo sqlx prepare --workspace
+default: prepare
 	cargo build
+
+prepare:
+	cargo sqlx prepare --workspace
 
 release:
 	cargo build --release

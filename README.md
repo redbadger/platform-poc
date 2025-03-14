@@ -10,8 +10,8 @@ application._
    - in wasmCloud on VMs [example](./platform-wasmcloud/README.md)
    - in wasmCloud on Kubernetes, with the wasmCloud Operator
      [example](./platform-wasmcloud/README.md)
-   - in Spin on VMs — to be added
-   - in Spin on Kubernetes, with SpinKube — to be added
+   - in Spin on VMs — to be added
+   - in Spin on Kubernetes, with SpinKube — to be added
 
 <!-- prettier-ignore -->
 > [!CAUTION]

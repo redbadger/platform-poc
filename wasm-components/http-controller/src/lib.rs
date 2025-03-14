@@ -34,16 +34,16 @@ fn handler(request: Request) -> Result<Response, ErrorCode> {
     let mut router = Router::new();
 
     router
-        .add("/data-init/:action", Handlers::DataInit)
+        .add("/api/data-init/:action", Handlers::DataInit)
         .expect("adding route");
     router
-        .add("/inventory", Handlers::Inventory)
+        .add("/api/inventory", Handlers::Inventory)
         .expect("adding route");
     router
-        .add("/orders", Handlers::Orders)
+        .add("/api/order", Handlers::Orders)
         .expect("adding route");
     router
-        .add("/products", Handlers::Products)
+        .add("/api/product", Handlers::Products)
         .expect("adding route");
 
     let Some(m) = router.best_match(request.path()) else {
