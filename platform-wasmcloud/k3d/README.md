@@ -3,7 +3,7 @@
 1. Create the cluster and local registry
 
    ```fish
-   ./create.fish
+   ../../local_k3d/create.fish
    ```
 
 1. Install the wasmCloud operator
@@ -45,5 +45,5 @@
 1. Delete the cluster and registry
 
    ```fish
-     ./destroy.fish
+     ../../local_k3d/destroy.fish
    ```

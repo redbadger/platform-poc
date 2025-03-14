@@ -1,5 +1,7 @@
 #!/usr/bin/env fish
 
+set --local SCRIPT_DIR (dirname (realpath (status -f)))
+
 function section
     echo
     string pad --right --char=— -w$COLUMNS "———— $argv ————"
@@ -8,7 +10,7 @@ end
 section "starting registry"
 k3d registry create platform-poc.localhost --port 5001
 
-section "starting platform-poc cluster"
+section "starting cluster"
 k3d cluster create platform-poc \
     --agents 2 \
     --registry-use k3d-platform-poc.localhost:5001 \
@@ -17,3 +19,6 @@ k3d cluster create platform-poc \
 
 section configuration
 kubectl cluster-info
+
+section "deploying prometheus"
+./deploy_prometheus.fish
